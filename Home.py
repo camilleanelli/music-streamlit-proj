@@ -26,16 +26,13 @@ df_countries_chart["streams"] = df_countries_chart["streams"].astype("float")
 
 st.header(":orange[Les tendances à travers le monde (source Spotify)]:globe_with_meridians:")
 
-print(df_countries_chart)
 # selection du pays
 country = st.selectbox(
-    "Choisir le pays",
+    "Sélectionner le pays",
     list(df_countries_chart["chart_country"].unique()),
     index=None,
     placeholder="Select country",
 )
-
-
 # define the data with selected country
 if country:
   country_name = country
@@ -64,9 +61,18 @@ st.dataframe(df_chart_by_country)
 st.subheader(":green[Les genres qui prédominent] :guitar:")
 
 df_genres_pred = data.value_counts('genre').reset_index()[0:15]
-
-st.bar_chart(data=df_genres_pred, x="genre", y="count", x_label="Total", y_label="Genres", color=None, horizontal=True, stack=None, width=None, height=None, use_container_width=True)
-
+st.bar_chart(data=df_genres_pred,
+             x="genre",
+             y="count",
+             x_label="Total",
+             y_label="Genres",
+             color=None,
+             horizontal=True,
+             stack=None,
+             width=None,
+             height=None,
+             use_container_width=True
+             )
 
 list_genres = list(data.value_counts('genre').reset_index()["genre"][0:15])
 df_genres_pred = data[data["genre"].isin(list_genres)]
@@ -80,17 +86,15 @@ dict_for_secteur = {}
 for col, value in count_genres.iterrows():
   dict_for_secteur[value["genre"]] = value["count"]
 
-fig_1, ax = plt.subplots(figsize=(6, 6))
+fig_secteur_genres, ax = plt.subplots(figsize=(6, 6))
 ax.pie(dict_for_secteur.values(), labels=dict_for_secteur.keys(), autopct='%1.1f%%', startangle=90)
 
 ax.axis('equal')
-
-# Afficher le graphique avec Seaborn (tu peux personnaliser les couleurs avec Seaborn)
 sns.set_palette("pastel")
 plt.title(f"Répartition des genres pour {country_name}")
 
 # Afficher le graphique
-st.pyplot(fig_1)
+st.pyplot(fig_secteur_genres)
 
 # on peut ajouter un selecteur d'artiste parmis ceux qui sont dans ls chart
 
@@ -120,7 +124,6 @@ ax.axis('equal')
 
 sns.set_palette("pastel")
 st.pyplot(fig_explicit)
-
 
 # carte repartition des streams
 st.subheader(":green[Répartition géographique des streams] :globe_with_meridians:")
