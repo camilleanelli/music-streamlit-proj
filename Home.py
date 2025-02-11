@@ -1,16 +1,15 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
-from sqlalchemy import create_engine, select, text
 from sqlalchemy.orm import Session
 import pandas as pd
-import plotly.express as px
 import seaborn as sns
 import graphviz
 
 st.set_page_config(
     page_title="Home",
     page_icon="👋",
+
     layout="wide"
 )
 
@@ -138,6 +137,5 @@ if st.__version__ != "1.39.0":
     st.graphviz_chart(diagram_global, use_container_width=False)
 else:
     st.graphviz_chart(diagram_global, use_container_width=True)
-
 
 
