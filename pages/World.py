@@ -93,25 +93,24 @@ tab1, tab2, tab3, tab4 = st.tabs(["Chart :top:", "Catégories musicales :guitar:
 
 with tab1:
   # Les Tops a travers le monde
-  col1, col2 = st.columns(2)
-  with col1:
+  with st.container():
+    selected_position = st.selectbox(
+        "Classer par ordre",
+        ["Croissant", "Décroissant"],
+    )
+
+    if selected_position =="Croissant":
+        order_asc = True
+    else:
+        order_asc = False
+
     with st.container():
-      selected_position = st.selectbox(
-          "Classer par ordre",
-          ["Croissant", "Décroissant"],
-      )
-
-      if selected_position =="Croissant":
-          order_asc = True
-      else:
-          order_asc = False
-
       # Table charts
       df_chart_by_country = data[["position", "name", "title", "streams", "code_country"]].sort_values("position", ascending=order_asc)
       df_chart_by_country = df_chart_by_country.drop_duplicates()
-      st.dataframe(df_chart_by_country)
+      st.dataframe(df_chart_by_country, hide_index=True)
 
-    with col2:
+    with st.container():
       with st.container():
         df_artistes_pop = data.groupby("name")["popularity"].mean().sort_values(ascending=False).reset_index()[0:15]
         st.bar_chart(data=df_artistes_pop, x="name", y="popularity", x_label="SPI indice", y_label="Artistes", color=None, horizontal=True, stack=None, width=None, height=None, use_container_width=True)
@@ -150,7 +149,7 @@ with tab2:
   with col2:
     with st.container():
       # les contenu explicit
-      st.markdown("#### Les contenus explicites :underage:")
+      st.markdown("#### :underage: Les contenus explicites")
 
       df_explicit = data.value_counts("explicit").reset_index()
 
@@ -169,7 +168,7 @@ with tab2:
 
   with st.container():
       # graph secteur pour les genres
-      st.markdown("#### Répartition en pourcentage :cd:")
+      st.markdown("#### :cd: Répartition en pourcentage")
       count_genres = data.value_counts("genre").reset_index()[0:15]
 
       dict_for_secteur = {}
@@ -210,15 +209,21 @@ with tab4:
   st.markdown("#### :globe_with_meridians: Répartition géographique ")
   print(data)
   print(selected_country2)
+
   if "Global" in selected_country2:
-    df_streams = df_countries_chart[df_countries_chart["code_country"] != "GLOBAL"].groupby(["code_country", "longitude", "latitude"])["streams"].sum().reset_index()
+    df_streams = df_countries_chart[(df_countries_chart["code_country"] != "GLOBAL")]
+    if selected_artist:
+      df_streams = df_streams[df_streams["name"] == selected_artist].groupby(["code_country", "longitude", "latitude"])["streams"].mean().reset_index()
+    else:
+      df_streams = df_streams.groupby(["code_country", "longitude", "latitude"])["streams"].mean().reset_index()
   else:
-    df_streams = data.groupby(["code_country", "longitude", "latitude"])["streams"].sum().reset_index()
+    df_streams = data.groupby(["code_country", "longitude", "latitude"])["streams"].mean().reset_index()
 
   print(df_streams)
 
-  df_streams["streams"] = df_streams["streams"].apply(lambda x: x/100)
-  st.map(data=df_streams, latitude="latitude", longitude="longitude", color="#ffaa00", size="streams", zoom=None, use_container_width=True, width=None, height=None)
+  # df_streams["streams"] = df_streams["streams"].apply(lambda x: x/100)
+  st.map(data=df_streams, latitude="latitude", longitude="longitude", color="#9acd38", size="streams", zoom=None, use_container_width=True, width=None, height=None)
 
 
+  st.write(f"Moyenne des streams, {selected_artist if selected_artist else 'tout le monde'}")
 
