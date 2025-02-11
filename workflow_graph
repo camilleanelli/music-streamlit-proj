@@ -1,0 +1,27 @@
+// Data Processing Workflow
+digraph {
+	bgcolor=black rankdir=TB
+	load_csv [label="load_csv
+Data loader" fillcolor="#1f77b4" fontcolor=white shape=box style="rounded,filled"]
+	clean_economic_impact [label="clean_economic_impact
+Transformer" fillcolor="#9467bd" fontcolor=white shape=box style="rounded,filled"]
+	ages_ranges [label="ages_ranges
+Transformer" fillcolor="#9467bd" fontcolor=white shape=box style="rounded,filled"]
+	add_coordinates_country [label="add_coordinates_country
+Transformer" fillcolor="#9467bd" fontcolor=white shape=box style="rounded,filled"]
+	add_coordinates_location [label="add_coordinates_location
+Transformer" fillcolor="#9467bd" fontcolor=white shape=box style="rounded,filled"]
+	flag_url [label="flag_url
+Transformer" fillcolor="#9467bd" fontcolor=white shape=box style="rounded,filled"]
+	clean [label="Clean
+Transformer" fillcolor="#9467bd" fontcolor=white shape=box style="rounded,filled"]
+	table_festivals [label="table_festivals
+Data exporter" fillcolor="#ff7f0e" fontcolor=white shape=box style="rounded,filled"]
+	load_csv -> clean_economic_impact
+	clean_economic_impact -> ages_ranges
+	ages_ranges -> add_coordinates_country
+	add_coordinates_country -> add_coordinates_location
+	add_coordinates_location -> flag_url
+	flag_url -> clean
+	clean -> table_festivals
+}

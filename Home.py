@@ -6,136 +6,138 @@ from sqlalchemy.orm import Session
 import pandas as pd
 import plotly.express as px
 import seaborn as sns
+import graphviz
 
 st.set_page_config(
     page_title="Home",
     page_icon="👋",
-
+    layout="wide"
 )
 
-# call Postgres database
-DATABASE_URL = "postgresql://postgres:hWWCWtvKQODqEErOleTnHmTcuKWaRAgd@monorail.proxy.rlwy.net:59179/railway"
-engine = create_engine(DATABASE_URL)
 
-with Session(engine) as session:
-    results = session.execute(text("SELECT * FROM countrychart"))
-    df_countries_chart = pd.DataFrame(results)
+# Configuration de la connexion à la base de données PostgreSQL
+DB_CONFIG = {
+    'user': 'postgres',
+    'password': 'hWWCWtvKQODqEErOleTnHmTcuKWaRAgd',
+    'host': 'monorail.proxy.rlwy.net',
+    'port': '59179',
+    'database': 'railway'
+}
 
-# we should not need this
-df_countries_chart["streams"] = df_countries_chart["streams"].astype("float")
+# Création de la connexion
+engine = create_engine(f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}")
 
-st.header(":orange[Les tendances à travers le monde (source Spotify)]:globe_with_meridians:")
+# Chargement des données Billboard
+@st.cache_data
+def load_data():
+    with engine.connect() as connection:
+        result = connection.execute(text("SELECT * FROM billboard_ol"))
+        data = pd.DataFrame(result.fetchall(), columns=result.keys())
+    return data
 
-# selection du pays
-country = st.selectbox(
-    "Sélectionner le pays",
-    list(df_countries_chart["chart_country"].unique()),
-    index=None,
-    placeholder="Select country",
-)
-# define the data with selected country
-if country:
-  country_name = country
-  data = df_countries_chart[df_countries_chart["chart_country"] == country_name]
+df = load_data()
+
+# Définir le diagramme en tant que chaîne DOT
+diagram_global = """
+digraph process {
+    rankdir=TB;  // Organisation de haut à bas
+
+    // Définition du style commun des noeuds
+    node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12];
+    
+    bgcolor="#2b2b2b";
+
+    // concerts
+    concert_data_loader [label="CSV Brut\\nData loader", fillcolor="#1f77b4", fontcolor="white"];
+    concert_clean_economic_impact [label="Convertion devises en USD\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    concert_ages_ranges [label="Création des tranches d'âges\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    concert_add_coordinates_country [label="Coords geo des pays\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    concert_add_coordinates_location [label="Coords geo des villes\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    concert_flag_url [label="Ajout URL des drapeaux de pays\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    concert_clean [label="Nettoyage (Manquants / Doublons)\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    concert_table_festivals [label="UPSERT table FESTIVALS\\nData exporter", fillcolor="#ff7f0e", fontcolor="white"];
+    
+    //evolution
+    evolution_data_loader [label="Web Scrapping Billboard.com\\nData loader", fillcolor="#1f77b4", fontcolor="white"];
+    evolution_ajout_week_year [label="Ajout Week et Year\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    evolution_table_billboard [label="UPSERT table BILLBOARD\\nData exporter", fillcolor="#ff7f0e", fontcolor="white"];
+    
+    //WorldCharts
+    WorldCharts_data_loader [label="Web Scrapping kworb.net\\nData loader", fillcolor="#1f77b4", fontcolor="white"];
+    WorldCharts_ajout_genre_popularity [label="API Spotify -> Ajout Genre et Popularité\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    WorldCharts_explode_genres [label="Explode des Genres\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    WorldCharts_add_coordinates [label="Définition Coords geo\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    WorldCharts_coordinates_to_table [label="Ajout Coords geo\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    WorldCharts_table_WorldCharts [label="UPSERT table WORLDCHATS\\nData exporter", fillcolor="#ff7f0e", fontcolor="white"];
+    
+    //plateform
+    plateform_data_loader [label="CSV Brut\\nData loader", fillcolor="#1f77b4", fontcolor="white"];
+    plateform_drop_columns [label="Drop colonnes inutiles\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    plateform_num_values [label="Valeurs num. manquantes\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    plateform_text_values [label="Valeurs txt manquantes\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+    plateform_table_plateforms [label="UPSERT table PLATEFORMS\\nData exporter", fillcolor="#ff7f0e", fontcolor="white"];
+    
+    // streamlit
+    streamlit [label="STREAMLIT", fillcolor=red, fontcolor="white"];
+    
+    
+    subgraph cluster_concert {
+        labelloc="t"
+        label="Event Concerts"  
+        fontcolor="white"
+        fontsize=20         
+        concert_data_loader -> concert_clean_economic_impact
+        concert_clean_economic_impact -> concert_ages_ranges
+        concert_ages_ranges -> concert_add_coordinates_country
+        concert_add_coordinates_country -> concert_add_coordinates_location
+        concert_add_coordinates_location -> concert_flag_url
+        concert_flag_url -> concert_clean
+        concert_clean -> concert_table_festivals
+    }
+        concert_table_festivals -> streamlit
+    
+    subgraph cluster_evolution {
+        labelloc="t"
+        label="Evolution"        
+        fontcolor="white"
+        fontsize=20   
+        evolution_data_loader -> evolution_ajout_week_year
+        evolution_ajout_week_year -> evolution_table_billboard
+    }  
+        evolution_table_billboard -> streamlit 
+    
+    subgraph cluster_WorldCharts {
+        labelloc="t"
+        label="WorldCharts"
+        fontcolor="white"
+        fontsize=20   
+        WorldCharts_data_loader -> WorldCharts_ajout_genre_popularity 
+        WorldCharts_ajout_genre_popularity -> WorldCharts_explode_genres
+        WorldCharts_explode_genres -> {WorldCharts_add_coordinates WorldCharts_coordinates_to_table}
+        WorldCharts_add_coordinates -> WorldCharts_coordinates_to_table
+        WorldCharts_coordinates_to_table -> WorldCharts_table_WorldCharts
+    }
+        WorldCharts_table_WorldCharts -> streamlit
+    
+    subgraph cluster_plateforms {
+        labelloc="t"
+        label="plateforms"
+        fontcolor="white"
+        fontsize=20   
+        plateform_data_loader -> plateform_drop_columns
+        plateform_drop_columns -> plateform_num_values
+        plateform_num_values -> plateform_text_values
+        plateform_text_values -> plateform_table_plateforms 
+    }
+        plateform_table_plateforms -> streamlit 
+}
+"""
+
+st.header("Diagramme Mage-AI")
+if st.__version__ != "1.39.0":
+    st.graphviz_chart(diagram_global, use_container_width=False)
 else:
-  data = df_countries_chart
-  country_name = "Tous les pays"
-
-st.subheader(":orange[Les charts]	:top:")
-selected_position = st.selectbox(
-    "Choisir les derniers ou les premiers",
-    ["Premiere position", "Derniere position"],
-)
-
-if selected_position =="Premiere position":
-    order_asc = True
-else:
-    order_asc = False
-
-df_chart_by_country = data[["_position", "_name", "title", "streams", "chart_country"]].sort_values("_position", ascending=order_asc)
-df_chart_by_country = df_chart_by_country.drop_duplicates()
-
-st.dataframe(df_chart_by_country)
-
-# afficher les genres predominants
-st.subheader(":green[Les genres qui prédominent] :guitar:")
-
-df_genres_pred = data.value_counts('genre').reset_index()[0:15]
-st.bar_chart(data=df_genres_pred,
-             x="genre",
-             y="count",
-             x_label="Total",
-             y_label="Genres",
-             color=None,
-             horizontal=True,
-             stack=None,
-             width=None,
-             height=None,
-             use_container_width=True
-             )
-
-list_genres = list(data.value_counts('genre').reset_index()["genre"][0:15])
-df_genres_pred = data[data["genre"].isin(list_genres)]
-
-
-# graph secteur pour les genres
-st.subheader(":green[Leurs répartition en pourcentage] :cd:")
-count_genres = df_genres_pred.value_counts("genre").reset_index()
-
-dict_for_secteur = {}
-for col, value in count_genres.iterrows():
-  dict_for_secteur[value["genre"]] = value["count"]
-
-fig_secteur_genres, ax = plt.subplots(figsize=(6, 6))
-ax.pie(dict_for_secteur.values(), labels=dict_for_secteur.keys(), autopct='%1.1f%%', startangle=90)
-
-ax.axis('equal')
-sns.set_palette("pastel")
-plt.title(f"Répartition des genres pour {country_name}")
-
-# Afficher le graphique
-st.pyplot(fig_secteur_genres)
-
-# on peut ajouter un selecteur d'artiste parmis ceux qui sont dans ls chart
-
-# les artist qui ressortent le plus sur ces charts
-st.subheader(f":blue[Les artistes les plus présents: {country_name}] :studio_microphone:")
-
-df_artiste_pred = data.value_counts("_name").reset_index()[0:15]
-st.bar_chart(data=df_artiste_pred, x="_name", y="count", x_label="Total", y_label="Artistes", color=None, horizontal=True, stack=None, width=None, height=None, use_container_width=True)
-# vs leur popularité
-st.subheader(f":blue[Leur popularité:] :blue_heart:")
-df_artistes_pop = data.groupby("_name")["popularity"].sum().sort_values(ascending=False).reset_index()[0:15]
-st.bar_chart(data=df_artistes_pop, x="_name", y="popularity", x_label="Notes (popularité)", y_label="Artistes", color=None, horizontal=True, stack=None, width=None, height=None, use_container_width=True)
-
-# les contenu explicit
-st.subheader(f":red[Les contenus explicites pour {country_name}] :underage:")
-
-df_explicit = data.value_counts("explicit").reset_index()
-dict_exp = {}
-for index, value in df_explicit.iterrows():
-  key = "Oui" if value["explicit"] == True else "Non"
-  dict_exp[key] = value["count"]
-
-fig_explicit, ax = plt.subplots(figsize=(6, 6))
-ax.pie(dict_exp.values(), labels=dict_exp.keys(), autopct='%1.1f%%', startangle=90)
-
-ax.axis('equal')
-
-sns.set_palette("pastel")
-st.pyplot(fig_explicit)
-
-# carte repartition des streams
-st.subheader(":green[Répartition géographique des streams] :globe_with_meridians:")
-list_genres = list(df_countries_chart.value_counts('genre').reset_index()["genre"][0:15])
-
-df_streams = df_countries_chart.groupby(["chart_country", "country_long", "country_lat"])["streams"].sum().reset_index()
-df_streams["streams"] = df_streams["streams"].apply(lambda x: x/100)
-st.map(data=df_streams, latitude="country_lat", longitude="country_long", color="#ffaa00", size="streams", zoom=None, use_container_width=True, width=None, height=None)
-print(df_streams.info())
-print(df_streams)
-
-# faire un selecteur pour le genre et voir sa répartition
+    st.graphviz_chart(diagram_global, use_container_width=True)
 
 
 
