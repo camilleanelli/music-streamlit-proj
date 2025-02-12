@@ -3,6 +3,9 @@ import pandas as pd
 import plotly.express as px
 import psycopg2
 import seaborn as sns
+from pathlib import Path
+import base64
+
 import plotly.graph_objects as go
 # 1️⃣ Connexion à la base PostgreSQL
 conn = psycopg2.connect(
@@ -13,10 +16,54 @@ conn = psycopg2.connect(
     port="59179"
 )
 cursor = conn.cursor()
+st.set_page_config(page_title="Platforms", page_icon="🎤", layout="wide")
+# Définissez le chemin de votre image
+image_path =r"C:\Users\nemri\Desktop\projet3\BJ2gNMU.webp"  # Remplacez par le chemin de votre image
+
+# Lire l'image et la convertir en base64
+with open(image_path, "rb") as image_file:
+    encoded_image = base64.b64encode(image_file.read()).decode()
+
+# CSS pour intégrer l'image comme fond d'écran
+page_bg_css = f"""
+<style>
+    .stApp {{
+        background-image: url("data:image/jpeg;base64,{encoded_image}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+</style>
+"""
+
+# Injectez le CSS dans Streamlit
+st.markdown(page_bg_css, unsafe_allow_html=True)
+# Personnalisation des titres avec CSS
+title_css = """
+<style>
+    h1, h2, h3, h4, h5, h6 {
+        font-size: 24px !important; /* Remplacez par la taille souhaitée */
+        font-family: 'Arial', sans-serif; /* Police personnalisée */
+        color: #333333; /* Couleur des titres */
+        text-align: center; /* Centrer les titres */
+        margin-bottom: 16px; /* Espacement sous les titres */
+    }
+</style>
+"""
+# Injectez le CSS dans l'application Streamlit
+st.markdown(title_css, unsafe_allow_html=True)
 
 # Configuration de la page Streamlit
-st.set_page_config(page_title="Dashboard", page_icon="🎤", layout="wide")
-st.header("🎵 Analyse et Comparaison des Plateformes Musicales : Tendances et Insights 🎧")
+
+st.markdown("""
+    <style>
+    .title {
+        font-size: 20px;
+        font-weight: bold;
+    }
+    </style>
+    <div class="title">🎵 Analyse et Comparaison des Plateformes Musicales : Tendances et Insights 🎧</div>
+""", unsafe_allow_html=True)
 
 # 2️⃣ Récupération des données depuis la base
 query = """
@@ -128,6 +175,7 @@ fig.update_layout(
 st.plotly_chart(fig)
 # Fonction pour récupérer les top 10 titres par plateforme
 def top_tracks_by_platform(df, platform):
+    # Récupération des 10 meilleurs titres pour une plateforme
     top_tracks = df[['track', 'artist', platform]].sort_values(by=platform, ascending=False).head(10)
     return top_tracks
 
@@ -138,27 +186,33 @@ platform_choice = st.selectbox("Choisissez une plateforme", platforms)
 st.write(f"Top 10 des titres pour {platform_choice}")
 top_tracks = top_tracks_by_platform(df, platform_choice)
 
-# Création du graphique pour afficher les titres et leur popularité
-fig2 = px.bar(
-    top_tracks,
-    x='track',
-    y=platform_choice,
-    color='artist',
-    labels={'track': 'Titre', platform_choice: 'Popularité'},
-    title=f"Top 10 des titres pour {platform_choice}"
+# Création du graphique camembert (pie chart)
+fig2 = px.pie(
+    top_tracks, 
+    names='track',  # Les titres des morceaux
+    values=platform_choice,  # Les valeurs correspondant à la popularité
+    color='track',  # Les couleurs seront différenciées par titre
+    title=f"Répartition de la popularité des 10 meilleurs titres sur {platform_choice}"
 )
-   # Ajustement du layout 
+
+# Ajustement du layout
+fig2.update_traces(
+    textinfo='percent+label',  # Affiche les pourcentages et le label
+    hoverinfo='label+value+percent'  # Info au survol
+)
+
 fig2.update_layout(
-            xaxis_tickangle=-45,  # Incline les noms des titres pour lisibilité
-            title_font_size=24,
-            xaxis_title_font_size=16,
-            yaxis_title_font_size=16,
-            margin=dict(l=40, r=40, t=40, b=120),
-            bargap=0.2  # Réduit l'espacement entre les barres
-        )
+    title_font_size=24,
+    margin=dict(l=40, r=40, t=40, b=40),  # Marges du graphique
+    width=600,  # Largeur du graphique
+    height=400  # Hauteur du graphique
+)
+
 # Affichage du graphique dans Streamlit
 st.plotly_chart(fig2)
+
 # Comparaison de la portée des playlists par plateforme
+
 
 # Calcul de la portée totale des playlists par plateforme
 playlist_reach_comparison = df_filtered[
@@ -171,25 +225,34 @@ fig_reach = px.bar(
     y=playlist_reach_comparison.values,
     labels={'x': 'Plateformes', 'y': 'Portée totale des playlists'},
     title="Comparaison de la portée des playlists par plateforme",
-    text_auto=True
+    text_auto=True,
+    width=600,  # Largeur du graphique
+    height=400  
 )
 
 # Personnalisation
 fig_reach.update_traces(
-    marker_color=["#0077B5",'#636EFA', '#FFD700'],  # Spotify (vert), YouTube (rouge), Deezer (bleu)
+    marker_color=["#0077B5", '#636EFA', '#FFD700'],  # Spotify (bleu), YouTube (bleu clair), Deezer (jaune)
     width=0.2,  # Ajuste la largeur des barres
     textfont_size=14,  # Taille du texte
     textposition="outside"  # Texte en dehors des barres
 )
 
+# Personnalisation de la mise en page
 fig_reach.update_layout(
-    title_font=dict(size=20, family="Arial", color="black"),  # Style du titre
-    xaxis_title_font=dict(size=14),
-    yaxis_title_font=dict(size=14),
+    title_font=dict(size=22, family="Arial", color="white"),  # Style du titre
+    xaxis_title_font=dict(size=16),
+    yaxis_title_font=dict(size=16),
+    margin=dict(t=50, b=50, l=50, r=50),  # Ajouter des marges pour éviter que les éléments soient coupés
+    xaxis=dict(tickangle=45),  # Rotation des étiquettes sur l'axe X
+    yaxis=dict(tickformat=".2s"),
+  # Hauteur du graphique
+    # Format des valeurs de l'axe Y (en millions, milliards, etc.)
 )
 
 # Affichage du graphique dans Streamlit
 st.plotly_chart(fig_reach)
+
 # Comparaison du nombre de playlists contenant les chansons
 playlist_count_comparison = df_filtered[
     ["spotify_playlist_count", "apple_music_playlist_count", "deezer_playlist_count", "amazon_playlist_count"]
@@ -201,9 +264,13 @@ fig_playlist_count = px.bar(
     y=playlist_count_comparison.values,
     labels={'x': 'Plateformes', 'y': 'Nombre total de playlists'},
     title="Comparaison du nombre de playlists contenant les chansons",
-    text_auto=True
+    text_auto=True,
+    width=600,  # Largeur du graphique
+    height=400  # Hauteur du graphique
 )
 
+# Afficher avec Streamlit
+st.plotly_chart(fig_playlist_count)
 
 # Calcul des ratios d'engagement
 df_filtered["youtube_engagement"] = df_filtered["youtube_likes"] / df_filtered["youtube_views"]
@@ -218,19 +285,36 @@ fig_engagement = px.bar(
     y=engagement_metrics.values,
     labels={'x': 'Plateforme', 'y': 'Ratio Likes / Vues'},
     title="Engagement des utilisateurs sur YouTube vs TikTok",
-    text_auto=True
+    text_auto=True,
+    width=600,  # Largeur du graphique
+    height=400  
+    
 )
 
 # Ajustements visuels
 fig_engagement.update_traces(
-    width=0.2,  # Réduire la largeur des barres
-    marker_color=['#636EFA', '#FFD700'],  # YouTube en bleu, TikTok en rouge
-    textfont_size=14,  # Taille du texte
-    textposition='outside'  # Texte à l'extérieur des barres
+    width=0.2,  # Largeur des barres (ajustée pour un meilleur équilibre visuel)
+    marker_color=['#636EFA', '#FFD700'],  # Couleurs personnalisées pour YouTube et TikTok
+    textfont_size=14,  # Taille des chiffres sur les barres
+    textposition='outside'  # Positionnement du texte en dehors des barres
+)
+
+# Mise à jour de l'apparence globale
+fig_engagement.update_layout(
+    font=dict(size=16),  # Taille globale de la police
+    title_font_size=18,  # Taille du titre
+    title_x=0.1,  # Centrer le titre
+    xaxis_title="Plateforme",
+    yaxis_title="Ratio Likes / Vues",
+    yaxis=dict(
+        tickformat=".1%"  # Format en pourcentage pour l'axe Y
+    ),
+    margin=dict(l=50, r=50, t=50, b=50)  # Ajustements des marges
 )
 
 # Afficher avec Streamlit
 st.plotly_chart(fig_engagement)
+
 # Calcul des streams totaux par artiste
 top_artists = df_filtered.groupby("artist")[
     ["spotify_streams", "youtube_views", "tiktok_views", "shazam_counts"]
@@ -242,10 +326,19 @@ fig_top_artists = px.bar(
     y=top_artists.values,
     labels={'x': 'Artistes', 'y': 'Total des streams'},
     title="Top 10 des artistes les plus streamés",
-    text_auto=True
+    text_auto=True,
+    width=600,  # Largeur du graphique
+    height=400  # Hauteur du graphique
 )
 
+# Ajustement de l'espacement entre les barres
+fig_top_artists.update_layout(
+    bargap=0.2  # Espacement entre les barres (0.0 pour collées, 1.0 pour très espacées)
+)
+
+# Affichage du graphique avec Streamlit
 st.plotly_chart(fig_top_artists)
+
 # Grouper par année de sortie et calculer les streams totaux
 df_filtered["release_year"] = df_filtered["release_date"].dt.year
 streams_by_year = df_filtered.groupby("release_year")[
@@ -262,18 +355,30 @@ fig_time_series = px.line(
 )
 
 st.plotly_chart(fig_time_series)
+
 # Trier les chansons les plus populaires
 top_tracks = df.nlargest(10, "spotify_popularity")
 
+# Renommer les colonnes pour des noms plus clairs
+top_tracks_renamed = top_tracks.rename(
+    columns={
+        "spotify_streams": "Écoutes Spotify",
+        "youtube_views": "Vues YouTube",
+        "tiktok_views": "Vues TikTok",
+        "shazam_counts": "Identifications Shazam"
+    }
+)
+
 # Création du graphique en barres empilées
 fig_stacked = px.bar(
-    top_tracks, 
+    top_tracks_renamed, 
     x="track", 
-    y=["spotify_streams", "youtube_views", "tiktok_views", "shazam_counts"],
+    y=["Écoutes Spotify", "Vues YouTube", "Vues TikTok", "Identifications Shazam"],
     title="Répartition des écoutes par plateforme pour les chansons les plus populaires",
     labels={"value": "Nombre d’écoutes", "track": "Titre du morceau"},
     barmode="stack"
 )
 
+# Affichage du graphique avec Streamlit
 st.plotly_chart(fig_stacked)
-#hj
+
