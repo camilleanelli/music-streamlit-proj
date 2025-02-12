@@ -201,22 +201,30 @@ if "World" in st.session_state.get("_page", ""):
         st.markdown("#### Les plus présents")
 
         df_artiste_pred = data.value_counts("name").reset_index()[0:15]
-        st.bar_chart(data=df_artiste_pred, x="name", y="count", x_label="Total", y_label="Artistes", color=None, horizontal=True, stack=None, width=None, height=None, use_container_width=True)
+        df_artiste_pred = df_artiste_pred.sort_values(by="count", ascending=False)
+        st.write(alt.Chart(df_artiste_pred).mark_bar().encode(
+            y=alt.Y('name', sort=None, title="Artistes"),
+            x=alt.X('count', title="Total")
+        ))
+        # st.bar_chart(data=df_artiste_pred, x="name", y="count", x_label="Total", y_label="Artistes", color=None, horizontal=True, stack=None, width=None, height=None, use_container_width=True)
 
 
     with col2:
       st.markdown("#### :green_heart: Les streams")
 
-      df_artistes_stream = data.groupby("name")["streams"].mean().sort_values(ascending=False).reset_index()[0:15]
-      st.bar_chart(data=df_artistes_stream, x="name", y="streams", x_label="Moyenne des streams", y_label="Artistes", horizontal=True)
-
+      df_artistes_stream = data.groupby("name")["streams"].mean().reset_index()[0:15]
+      df_artistes_stream = df_artistes_stream.sort_values(by=["streams"], ascending=False)
+      st.write(alt.Chart(df_artistes_stream).mark_bar().encode(
+            y=alt.Y('name', sort=None, title="Artistes"),
+            x=alt.X('streams', title="Moyenne des streams")
+        ))
+      # st.bar_chart(data=df_artistes_stream, x="name", y="streams", x_label="Moyenne des streams", y_label="Artistes", horizontal=True)
+      print(df_artistes_stream)
   with tab4:
     # carte repartition des streams
-    st.markdown("#### :globe_with_meridians: Répartition géographique ")
-    print(data)
-    print(selected_country2)
+    st.markdown("#### :globe_with_meridians: Répartition géographique")
 
-    if "Global" in selected_country2:
+    if "Global" in selected_country2 or len(selected_country2) == 1:
       df_streams = df_countries_chart[(df_countries_chart["code_country"] != "GLOBAL")]
       if selected_artist:
         df_streams = df_streams[df_streams["name"] == selected_artist].groupby(["code_country", "longitude", "latitude"])["streams"].mean().reset_index()
@@ -225,8 +233,6 @@ if "World" in st.session_state.get("_page", ""):
     else:
       df_streams = data.groupby(["code_country", "longitude", "latitude"])["streams"].mean().reset_index()
 
-    print(df_streams)
-    st.write(f"Moyenne des streams, {selected_artist if selected_artist else 'tout le monde'}")
     st.map(data=df_streams, latitude="latitude", longitude="longitude", color="#9acd38", size="streams", zoom=None, use_container_width=True, width=None, height=None)
 
 
