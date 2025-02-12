@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, select, text
 from sqlalchemy.orm import Session
 import pandas as pd
 import seaborn as sns
+import altair as alt
 
 st.set_page_config(
     page_title="World",
@@ -37,7 +38,7 @@ with Session(engine) as session:
     df_countries_chart = pd.DataFrame(results)
 
 
-st.header("Les tendances sur plusieurs pays - source Spotify :globe_with_meridians:")
+st.header("Les tendances un peu partout :globe_with_meridians: - source Spotify")
 
 
 col1, col2, col3 = st.columns(3)
@@ -45,7 +46,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
   # ajouter la possibilité de sélectionner l'europe
   selected_country2 = st.sidebar.multiselect(
-      "Choisir un ou plusieurs pays",
+      "Localisation",
       list(df_countries_chart["country_name"].sort_values(ascending=True).unique()),
       default="Global"
   )
@@ -61,7 +62,7 @@ else:
 
 #Choose category
 selected_genre = st.sidebar.multiselect(
-      "Sélectionner une catégorie",
+      "Catégorie musicale",
       list(data["genre"].sort_values(ascending=True).unique()),
       placeholder="Sélectionner une catégorie",
       default=None
@@ -76,7 +77,7 @@ else:
 
 # choose artist
 selected_artist = st.sidebar.selectbox(
-  "Nom artiste",
+  "Artiste",
   list(data["name"].sort_values(ascending=True).unique()),
   index=None,
   placeholder="Sélectionner un artiste"
@@ -106,15 +107,20 @@ with tab1:
 
     with st.container():
       # Table charts
-      df_chart_by_country = data[["position", "name", "title", "streams", "code_country"]].sort_values("position", ascending=order_asc)
+      df_chart_by_country = data[["position", "name", "title", "streams"]].sort_values("position", ascending=order_asc)
       df_chart_by_country = df_chart_by_country.drop_duplicates()
       st.dataframe(df_chart_by_country, hide_index=True)
 
     with st.container():
       with st.container():
-        df_artistes_pop = data.groupby("name")["popularity"].mean().sort_values(ascending=False).reset_index()[0:15]
-        st.bar_chart(data=df_artistes_pop, x="name", y="popularity", x_label="SPI indice", y_label="Artistes", color=None, horizontal=True, stack=None, width=None, height=None, use_container_width=True)
+        st.markdown("#### L'indice de popularité")
 
+
+        df_artistes_pop = data.groupby("title")["popularity"].mean().sort_values(ascending=False).reset_index()[0:15]
+        st.write(alt.Chart(df_artistes_pop).mark_bar().encode(
+            y=alt.Y('title', sort=None, title="Track"),
+            x=alt.X('popularity', title="SPI")
+        ))
         with st.expander(":green[Qu'est ce que le SPI ?]"):
           st.write('''
               L'Indice de popularité de Spotify (SPI) est une mesure de performance rare que Spotify montre aux artistes.
@@ -130,7 +136,7 @@ with tab2:
     with st.container():
 
         # afficher les genres predominants
-        st.markdown("#### Les catégories qui prédominent :guitar:")
+        st.markdown("#### Les catégories préférées")
 
         df_genres_pred = data.value_counts('genre').reset_index()[0:15]
         st.bar_chart(data=df_genres_pred,
@@ -220,10 +226,9 @@ with tab4:
     df_streams = data.groupby(["code_country", "longitude", "latitude"])["streams"].mean().reset_index()
 
   print(df_streams)
-
-  # df_streams["streams"] = df_streams["streams"].apply(lambda x: x/100)
+  st.write(f"Moyenne des streams, {selected_artist if selected_artist else 'tout le monde'}")
   st.map(data=df_streams, latitude="latitude", longitude="longitude", color="#9acd38", size="streams", zoom=None, use_container_width=True, width=None, height=None)
 
 
-  st.write(f"Moyenne des streams, {selected_artist if selected_artist else 'tout le monde'}")
+
 
