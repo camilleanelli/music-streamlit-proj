@@ -18,18 +18,35 @@ DB_CONFIG = {
 }
 
 
-# Ajouter une image depuis une URL en utilisant CSS 
+# Ajouter une image background depuis une URL en utilisant CSS 
 st.markdown(
     f"""
     <style>
         .stApp {{
-            background-image: url("https://img.freepik.com/vecteurs-libre/fond-ondule-colore_23-2148491661.jpg");
+            background-image: url("https://img.freepik.com/free-vector/wavy-colorful-background-style_23-2148497521.jpg");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            background-color: rgba(0,0,0, 0.6); /* Change la dernière valeur (0.5) pour plus de transparence */
+            background-color: rgba(0,0,0, 0.5); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
             background-blend-mode: overlay; /* Fusionne l'image et la couleur */
         }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Rendre la sidebar de Streamlit semi-transparente afin qu'on puisse voir le background
+st.markdown(
+    """
+    <style>
+        /* Sélectionne la sidebar entière */
+        section[data-testid="stSidebar"] {
+            background-color: rgba(0, 0, 0, 0.6); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
+        }
+
+        /* Applique la couleur blanche aux textes pour garantir une bonne lisibilité */
+        section[data-testid="stSidebar"] * {color: white; 
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -114,7 +131,7 @@ if "Event_concerts" in st.session_state.get("_page", ""):
     if selected_music_genre != "Tous":
         filtered_df = filtered_df[filtered_df["Music_Genre"] == selected_music_genre]
 
-    tab1, tab2, tab3 = st.tabs(["Aperçu et performances globales 📈", "Analyse d'audience et de tendances 👥", "Impact économique et comparaison internationale 💰"])
+    tab1, tab2, tab3 = st.tabs(["Aperçu des performances globales 📈", "Analyse d'audience 👥", "Impact économique et comparaison internationale 💰"])
 
 
     #### BLOC 1 : OVERVIEW AND OVERALL PERFORMANCE ####
@@ -213,7 +230,7 @@ if "Event_concerts" in st.session_state.get("_page", ""):
             st.subheader("_Liste des Festivals_")
             
             # Extraire uniquement les colonnes nécessaires
-            festival_list = filtered_df[["Festival_Name"]].drop_duplicates()
+            festival_list = filtered_df[["Festival_Name"]].drop_duplicates().sort_values("Festival_Name")
             
             # Affichage de la table avec configuration des colonnes
             st.dataframe(
@@ -246,7 +263,9 @@ if "Event_concerts" in st.session_state.get("_page", ""):
             ).add_to(m)
 
         # Afficher la carte dans Streamlit
-        folium_static(m)
+        # Utiliser `st.container()` pour forcer la pleine largeur
+        with st.container():
+            folium_static(m, width=1200, height=600)  # Largeur étendue pour remplir la page
 
 
     #### BLOC 2 : AUDIENCE AND TREND ANALYSIS ####
@@ -353,7 +372,11 @@ if "Event_concerts" in st.session_state.get("_page", ""):
                 y="Festival_Name",
                 orientation="h",
                 color="Economic_Impact_USD",
-                labels={"Economic_Impact_USD": "Economic Impact (USD)", "Festival_Name": "Festival"},
+                labels={"Festival_Name": "Festival", "Economic_Impact_USD": "Economic Impact (USD)"},
+                hover_data={
+                    "Festival_Name": True,  
+                    "Economic_Impact_USD":':,',  # Formatage des milliers
+                },
                 height=500
             )
             st.plotly_chart(fig_revenue, use_container_width=True)
@@ -371,7 +394,14 @@ if "Event_concerts" in st.session_state.get("_page", ""):
                 y="Music_Genre",
                 orientation="h",
                 color="Economic_Impact_USD",
-                labels={"Economic_Impact_USD": "Economic Impact (USD)", "Music_Genre": "Genre Musical"},
+                labels={"Music_Genre": "Genre Musical", "Economic_Impact_USD": "Economic Impact (USD)"},
+                hover_data={
+                    "Music_Genre": True,  
+                    "Economic_Impact_USD":':,',  # Formatage des milliers
+                },
                 height=500
             )
             st.plotly_chart(fig_music_genre, use_container_width=True)
+
+        
+
