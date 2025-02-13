@@ -1,12 +1,9 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import seaborn as sns
 import folium
-import matplotlib.pyplot as plt
 from streamlit_folium import folium_static
 from sqlalchemy import create_engine, select, text
-from collections import Counter
 
 # Configuration de la page 
 st.session_state["_page"] = "Event_concerts"
@@ -19,6 +16,25 @@ DB_CONFIG = {
     'port': '59179',
     'database': 'railway'
 }
+
+
+# Ajouter une image depuis une URL en utilisant CSS 
+st.markdown(
+    f"""
+    <style>
+        .stApp {{
+            background-image: url("https://img.freepik.com/vecteurs-libre/fond-ondule-colore_23-2148491661.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: rgba(0,0,0, 0.6); /* Change la dernière valeur (0.5) pour plus de transparence */
+            background-blend-mode: overlay; /* Fusionne l'image et la couleur */
+        }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 
 # Création de la connexion
 engine = create_engine(f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}")
@@ -53,7 +69,7 @@ if "Event_concerts" in st.session_state.get("_page", ""):
     df = load_data()
 
     # Ajout du titre principal du dashboard
-    st.markdown("<h1 style='text-align: center; color: green;'> International Music Festival - 2024 </h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: white;'> International Music Festival - 2024 </h1>", unsafe_allow_html=True)
 
     # Sidebar - Filtres
     st.sidebar.header("🔍 Filtres Interactifs")
@@ -111,7 +127,7 @@ if "Event_concerts" in st.session_state.get("_page", ""):
                 return f"{num / 1_000:.2f}K"
             return str(num)
 
-        # CSS pour le fond gris des métriques
+        # Ajouter un fond gris aux métriques en utilisant CSS 
         st.markdown("""
             <style>
                 .metric-container {
