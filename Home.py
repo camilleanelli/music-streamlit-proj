@@ -254,12 +254,11 @@ with tab4:
         """
         st.markdown(background1_html, unsafe_allow_html=True)
         st.markdown("""
-        1. **Acquisition des Données**
-        2. **Analyse et nettoyage**  
-        3. **Intégration dans Mage-AI et création d'une base de données PostgreSQL**
-        4. **Recherche de KPI pertinents**
-        5. **Création de l'interface Streamlit**
-        6. **Test de l'interface**
+        1. **Acquisition des Données** 
+        2. **Intégration et traitement dans Mage-AI (nettoyage et update PostgreSQL)**
+        3. **Recherche de KPI pertinents**
+        4. **Création de l'interface Streamlit**
+        5. **Test de l'interface**
         """, unsafe_allow_html=False)
 
 
@@ -284,14 +283,15 @@ with tab4:
         background1_html = f"""
         <div class="metric-container">
             <div class="metric-box">
-                <div class="metric-value">Exploration des Données</div>
+                <div class="metric-value">Collecte des Données</div>
             </div>
         </div>
         """
         st.markdown(background1_html, unsafe_allow_html=True)
         st.markdown("""
-        - **Fichiers bases de données**
+        - **Fichiers CSV**
         - **Web scraping**  
+        - **API REST**  
         """, unsafe_allow_html=False)
         
 ### Diagramme Mage-AI
@@ -360,9 +360,9 @@ with tab5:
         
         //WorldCharts
         WorldCharts_data_loader [label="Web Scrapping kworb.net\\nData loader", fillcolor="#1f77b4", fontcolor="white"];
-        WorldCharts_ajout_genre_popularity [label="API Spotify -> Ajout Genre et Popularité\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+        WorldCharts_ajout_genre_popularity [label="API Spotify\\nAjout Genre et Popularité\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
         WorldCharts_explode_genres [label="Explode des Genres\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
-        WorldCharts_add_coordinates [label="Définition Coords geo\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
+        # WorldCharts_add_coordinates [label="Définition Coords geo\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
         WorldCharts_coordinates_to_table [label="Ajout Coords geo\\nTransformer", fillcolor="#9467bd", fontcolor="white"];
         WorldCharts_table_WorldCharts [label="UPSERT table WORLDCHATS\\nData exporter", fillcolor="#ff7f0e", fontcolor="white"];
         
@@ -409,8 +409,7 @@ with tab5:
             fontsize=20   
             WorldCharts_data_loader -> WorldCharts_ajout_genre_popularity 
             WorldCharts_ajout_genre_popularity -> WorldCharts_explode_genres
-            WorldCharts_explode_genres -> {WorldCharts_add_coordinates WorldCharts_coordinates_to_table}
-            WorldCharts_add_coordinates -> WorldCharts_coordinates_to_table
+            WorldCharts_explode_genres -> WorldCharts_coordinates_to_table
             WorldCharts_coordinates_to_table -> WorldCharts_table_WorldCharts
         }
             WorldCharts_table_WorldCharts -> streamlit
@@ -428,8 +427,13 @@ with tab5:
             plateform_table_plateforms -> streamlit 
     }
     """
-    
-    st.header("Diagramme Mage-AI")
+
+    st.markdown(
+    """
+    <h2 style="text-align: center; color: white;">Diagramme Mage-AI</h2>
+    """,
+    unsafe_allow_html=True
+)
     if st.__version__ != "1.39.0":
         st.graphviz_chart(diagram_global, use_container_width=False)
     else:
