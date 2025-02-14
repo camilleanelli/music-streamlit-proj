@@ -297,11 +297,6 @@ with tab4:
 ### Diagramme Mage-AI
 
 with tab5:
-    # st.image("diagramme_mage-ai.png", use_column_width=True)
-    st.markdown("""
-    Le diagramme ci-dessus montre la structure du projet et les interactions entre les différents composants.
-    """, unsafe_allow_html=False)
-
     # Configuration de la connexion à la base de données PostgreSQL
     if "DB_CONFIG" not in st.session_state:
         st.session_state.DB_CONFIG = {
@@ -428,9 +423,10 @@ with tab5:
     }
     """
 
+    st.write("")
     st.markdown(
     """
-    <h2 style="text-align: center; color: white;">Diagramme Mage-AI</h2>
+    <h4 style="text-align: center; color: white;">Le diagramme ci-dessous montre la structure du projet<br>et les pipelines Mage-AI des différents composants.</h4>
     """,
     unsafe_allow_html=True
 )
