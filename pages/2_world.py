@@ -55,7 +55,7 @@ st.markdown(
         }
 
         /* Applique la couleur blanche aux textes pour garantir une bonne lisibilité */
-        section[data-testid="stSidebar"] * {color: white; 
+        section[data-testid="stSidebar"] * {color: white;
         }
     </style>
     """,
