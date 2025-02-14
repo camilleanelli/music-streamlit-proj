@@ -7,6 +7,18 @@ from pathlib import Path
 import base64
 
 import plotly.graph_objects as go
+import re
+from unidecode import unidecode
+
+# Fonction de nettoyage
+def clean_text(text):
+    if isinstance(text, str):
+        text = unidecode(text)  # Normaliser les caractères spéciaux
+        text = re.sub(r'[^\w\s-]', '', text)  # Supprimer caractères non alphanumériques sauf espaces et tirets
+        text = re.sub(r'\s+', ' ', text).strip()  # Supprimer les espaces multiples
+        return text
+    return text
+
 # 1️⃣ Connexion à la base PostgreSQL
 conn = psycopg2.connect(
     dbname="railway",
@@ -70,17 +82,9 @@ title_css = """
 st.markdown(title_css, unsafe_allow_html=True)
 
 # Configuration de la page Streamlit
+st.markdown("<h1 style='text-align: center; color: white;'>  Analyse et Comparaison des Plateformes Musicales : Tendances et Insights 🎧 </h1>", unsafe_allow_html=True)
 
-st.markdown("""
-    <style>
-    .title {
-        font-size: 20px;
-        font-weight: bold;
-    }
-    </style>
-    <div class="title">🎵 Analyse et Comparaison des Plateformes Musicales : Tendances et Insights 🎧</div>
-""", unsafe_allow_html=True)
-
+   
 # 2️⃣ Récupération des données depuis la base
 query = """
     SELECT "track", "album_name", "artist", "release_date", "track_score",
@@ -109,6 +113,10 @@ columns = [
 
 # Création du DataFrame
 df = pd.DataFrame(data, columns=columns)
+# 3️⃣ Nettoyage des données (si nécessaire)
+df['track'] = df['track'].apply(clean_text)
+df['album_name'] = df['album_name'].apply(clean_text)
+df['artist'] = df['artist'].apply(clean_text)
 
 # 3️⃣ Préparation des données
 df["release_date"] = pd.to_datetime(df["release_date"], errors="coerce")
@@ -171,7 +179,7 @@ fig = px.bar(
 # Personnalisation des couleurs
 fig.update_traces(
     textposition='outside',  # Texte à l'extérieur des barres
-    texttemplate='%{text:.0f}',  # Texte arrondi
+     texttemplate='%{y:.2s}',  # Texte arrondi
     marker=dict(
         color=["#0077B5", '#636EFA', '#69C9D0'],  # Spotify en bleu, YouTube en violet, TikTok en turquoise
         line=dict(width=0.2, color='DarkSlateGrey')  # Bordures des barres
@@ -181,20 +189,20 @@ fig.update_traces(
 # Mise en page et ajustements
 # Mise en page et ajustements
 fig.update_layout(
-    xaxis_title_font_size=18,
-    yaxis_title_font_size=18,
-    xaxis_title="Plateformes",
-    yaxis=dict(
-        title="Total des Streams",
-        tickformat="~s"  # Suffixes automatiques (K, M, B, T)
-    ),
-    xaxis_tickangle=-45,  # Incline les noms des plateformes
-    margin=dict(l=40, r=40, t=40, b=40),  # Ajustement des marges
-    bargap=0.2,  # Espacement entre les barres
-    width=600,  # Largeur du graphique
-    height=400,  # Hauteur du graphique
-    plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
-    paper_bgcolor="rgba(0,0,0,0)"  # Fond global transparent
+     # Style du titre
+    xaxis_title_font=dict(size=16),
+    yaxis_title_font=dict(size=16),
+    margin=dict(t=50, b=50, l=50, r=50),  # Ajuster les marges
+    xaxis=dict(tickangle=45,
+               showgrid=False),  # Rotation des étiquettes sur l'axe X
+    yaxis=dict(tickformat=".2s",
+               showgrid=False),  # Format des nombres sur l'axe Y
+    plot_bgcolor="rgba(0,0,0,0.0)",  # Zone centrale semi-transparente
+    paper_bgcolor="rgba(0,0,0,0.5)",  # Fond global semi-transparent
+    legend=dict(
+        bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour la légende
+        font=dict(color="white")  # Texte blanc pour la lisibilité
+    )
 )
 
 
@@ -232,13 +240,21 @@ fig2.update_traces(
 )
 
 fig2.update_layout(
-    margin=dict(l=40, r=40, t=40, b=40),  # Marges du graphique
-    width=600,  # Largeur du graphique
-    height=400,
-    plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
-    paper_bgcolor="rgba(0,0,0,0)"  # Fond global transparent
-# Hauteur du graphique
-)
+       # Style du titre
+    xaxis_title_font=dict(size=16),
+    yaxis_title_font=dict(size=16),
+    margin=dict(t=50, b=50, l=50, r=50),  # Ajuster les marges
+    xaxis=dict(tickangle=45,
+               showgrid=False),  # Rotation des étiquettes sur l'axe X
+    yaxis=dict(tickformat=".2s",
+               showgrid=False),  # Format des nombres sur l'axe Y
+    plot_bgcolor="rgba(0,0,0,0.0)",  # Zone centrale semi-transparente
+    paper_bgcolor="rgba(0,0,0,0.5)",  # Fond global semi-transparent
+    legend=dict(
+        bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour la légende
+        font=dict(color="white") 
+    )# Texte blanc pour la lisibilité
+    )
 
 # Affichage du graphique dans Streamlit
 st.plotly_chart(fig2)
@@ -259,9 +275,8 @@ fig_reach = px.bar(
     x=playlist_reach_comparison.index,  # Plateformes sur l'axe X
     y=playlist_reach_comparison.values,  # Portée totale sur l'axe Y
     labels={'x': 'Plateformes', 'y': 'Portée totale des playlists'}, # Étiquettes des axes
-    text_auto=True,  # Affichei les valeurs directement sur les barres
-    width=600,
-    height=500
+    text_auto=True # Affichei les valeurs directement sur les barres
+    
     
 )
 
@@ -275,15 +290,20 @@ fig_reach.update_traces(
 
 # Personnalisation de la mise en page
 fig_reach.update_layout(
-     # Style du titre
+    # Style du titre
     xaxis_title_font=dict(size=16),
     yaxis_title_font=dict(size=16),
     margin=dict(t=50, b=50, l=50, r=50),  # Ajuster les marges
-    xaxis=dict(tickangle=45),  # Rotation des étiquettes sur l'axe X
-    yaxis=dict(tickformat=".2s") ,
-    plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
-    paper_bgcolor="rgba(0,0,0,0)"  # Fond global transparent
-# Format des nombres sur l'axe Y
+    xaxis=dict(tickangle=45,
+               showgrid=False),  # Rotation des étiquettes sur l'axe X
+    yaxis=dict(tickformat=".2s",
+               showgrid=False),  # Format des nombres sur l'axe Y
+    plot_bgcolor="rgba(0,0,0,0.0)",  # Zone centrale semi-transparente
+    paper_bgcolor="rgba(0,0,0,0.5)",  # Fond global semi-transparent
+    legend=dict(
+        bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour la légende
+        font=dict(color="white")  # Texte blanc pour la lisibilité
+    )
 )
 
 # Étape 5 : Affichage du graphique dans Streamlit
@@ -310,19 +330,24 @@ fig_playlist_comparison = px.bar(
     x=playlist_count_total.index,
     y=playlist_count_total.values,
     labels={'x': 'Plateformes de streaming', 'y': 'Nombre de playlists contenant les chansons'},
-    text_auto=True,
-    width=600,  # Largeur du graphique
-    height=400  # Hauteur du graphique
+    text_auto=True
 )
 fig_playlist_comparison.update_layout(
      # Style du titre
+    # Style du titre
     xaxis_title_font=dict(size=16),
     yaxis_title_font=dict(size=16),
     margin=dict(t=50, b=50, l=50, r=50),  # Ajuster les marges
-    xaxis=dict(tickangle=45),  # Rotation des étiquettes sur l'axe X
-    yaxis=dict(tickformat=".2s") ,
-    plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
-    paper_bgcolor="rgba(0,0,0,0)"  )
+    xaxis=dict(tickangle=45,
+               showgrid=False),  # Rotation des étiquettes sur l'axe X
+    yaxis=dict(tickformat=".2s",
+               showgrid=False),  # Format des nombres sur l'axe Y
+    plot_bgcolor="rgba(0,0,0,0.0)",  # Zone centrale semi-transparente
+    paper_bgcolor="rgba(0,0,0,0.5)",  # Fond global semi-transparent
+    legend=dict(
+        bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour la légende
+        font=dict(color="white")  # Texte blanc pour la lisibilité
+    )  )
 # Afficher avec Streamlit
 st.plotly_chart(fig_playlist_comparison)
 
@@ -339,10 +364,9 @@ fig_engagement = px.bar(
     y=engagement_metrics.values,
     labels={'x': 'Plateforme', 'y': 'Ratio Likes / Vues'},
 
-    text_auto=True,
-    width=600,  # Largeur du graphique
-    height=400  
+    text_auto=True
     
+
 )
 
 # Ajustements visuels
@@ -355,18 +379,21 @@ fig_engagement.update_traces(
 
 # Mise à jour de l'apparence globale
 fig_engagement.update_layout(
-    font=dict(size=16),  # Taille globale de la police
- # Taille du titre
- # Centrer le titre
-    xaxis_title="Plateforme",
-    yaxis_title="Ratio Likes / Vues",
-    yaxis=dict(
-        tickformat=".1%"  # Format en pourcentage pour l'axe Y
-    ),
-    margin=dict(l=50, r=50, t=50, b=50),
-    plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
-    paper_bgcolor="rgba(0,0,0,0)"# Ajustements des marges
-)
+     # Style du titre
+    xaxis_title_font=dict(size=16),
+    yaxis_title_font=dict(size=16),
+    margin=dict(t=50, b=50, l=50, r=50),  # Ajuster les marges
+    xaxis=dict(tickangle=45,
+               showgrid=False),  # Rotation des étiquettes sur l'axe X
+    yaxis=dict(tickformat=".2s",
+               showgrid=False),  # Format des nombres sur l'axe Y
+    plot_bgcolor="rgba(0,0,0,0.0)",  # Zone centrale semi-transparente
+    paper_bgcolor="rgba(0,0,0,0.5)",  # Fond global semi-transparent
+    legend=dict(
+        bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour la légende
+        font=dict(color="white") 
+        )# Texte blanc pour la lisibilité
+    )
 
 # Afficher avec Streamlit
 st.plotly_chart(fig_engagement)
@@ -381,16 +408,25 @@ fig_top_artists = px.bar(
     x=top_artists.index,
     y=top_artists.values,
     labels={'x': 'Artistes', 'y': 'Total des streams'},
-    text_auto=True,
-    width=600,  # Largeur du graphique
-    height=400  # Hauteur du graphique
+    text_auto=True
 )
 
 # Ajustement de l'espacement entre les barres
 fig_top_artists.update_layout(
-    bargap=0.2 ,
-    plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
-    paper_bgcolor="rgba(0,0,0,0)",# Espacement entre les barres (0.0 pour collées, 1.0 pour très espacées)
+     # Style du titre
+    xaxis_title_font=dict(size=16),
+    yaxis_title_font=dict(size=16),
+    margin=dict(t=50, b=50, l=50, r=50),  # Ajuster les marges
+    xaxis=dict(tickangle=45,
+               showgrid=False),  # Rotation des étiquettes sur l'axe X
+    yaxis=dict(tickformat=".2s",
+               showgrid=False),  # Format des nombres sur l'axe Y
+    plot_bgcolor="rgba(0,0,0,0.0)",  # Zone centrale semi-transparente
+    paper_bgcolor="rgba(0,0,0,0.5)",  # Fond global semi-transparent
+    legend=dict(
+        bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour la légende
+        font=dict(color="white")  # Texte blanc pour la lisibilité
+    )# Espacement entre les barres (0.0 pour collées, 1.0 pour très espacées)
 )
 
 # Affichage du graphique avec Streamlit
@@ -407,15 +443,25 @@ fig_time_series = px.line(
     streams_by_year,
     x="release_year",
     y=["spotify_streams", "youtube_views", "tiktok_views", "shazam_counts"],
-    labels={"release_year": "Année de sortie", "value": "Nombre total de streams"},
-    width=600,  # Largeur du graphique
-    height=400  
+    labels={"release_year": "Année de sortie", "value": "Nombre total de streams"}
+    
 )
 fig_time_series.update_layout(
     
-    plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
-    paper_bgcolor="rgba(0,0,0,0)"# Espacement entre les barres (0.0 pour collées, 1.0 pour très espacées)
-)
+   # Style du titre
+    xaxis_title_font=dict(size=16),
+    yaxis_title_font=dict(size=16),
+    margin=dict(t=50, b=50, l=50, r=50),  # Ajuster les marges
+    xaxis=dict(tickangle=45,
+               showgrid=False),  # Rotation des étiquettes sur l'axe X
+    yaxis=dict(tickformat=".2s",
+               showgrid=False),  # Format des nombres sur l'axe Y
+    plot_bgcolor="rgba(0,0,0,0.0)",  # Zone centrale semi-transparente
+    paper_bgcolor="rgba(0,0,0,0.5)",  # Fond global semi-transparent
+    legend=dict(
+        bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour la légende
+        font=dict(color="white")  # Texte blanc pour la lisibilité
+    ))
 st.plotly_chart(fig_time_series)
 
 # Trier les chansons les plus populaires
@@ -437,15 +483,25 @@ fig_stacked = px.bar(
     x="track", 
     y=["Écoutes Spotify", "Vues YouTube", "Vues TikTok", "Identifications Shazam"],
     labels={"value": "Nombre d’écoutes", "track": "Titre du morceau"},
-    barmode="stack",
-    width=600,  # Largeur du graphique
-    height=400  
+    barmode="stack"
+     
 )
 fig_stacked.update_layout(
     
-    plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
-    paper_bgcolor="rgba(0,0,0,0)"# Espacement entre les barres (0.0 pour collées, 1.0 pour très espacées)
-)
+    # Style du titre
+    xaxis_title_font=dict(size=16),
+    yaxis_title_font=dict(size=16),
+    margin=dict(t=50, b=50, l=50, r=50),  # Ajuster les marges
+    xaxis=dict(tickangle=45,
+               showgrid=False),  # Rotation des étiquettes sur l'axe X
+    yaxis=dict(tickformat=".2s",
+               showgrid=False),  # Format des nombres sur l'axe Y
+    plot_bgcolor="rgba(0,0,0,0.0)",  # Zone centrale semi-transparente
+    paper_bgcolor="rgba(0,0,0,0.5)",  # Fond global semi-transparent
+    legend=dict(
+        bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour la légende
+        font=dict(color="white")  # Texte blanc pour la lisibilité
+    ))
 # Affichage du graphique avec Streamlit
 st.plotly_chart(fig_stacked)
 
