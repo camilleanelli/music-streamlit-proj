@@ -91,47 +91,48 @@ if "Event_concerts" in st.session_state.get("_page", ""):
     # Sidebar - Filtres
     st.sidebar.header("🔍 Filtres Interactifs")
 
-    # Options de filtre avec "Tous" comme valeur par défaut
-    festival_list = ["Tous"] + sorted(df["Festival_Name"].unique())
-    country_list = ["Tous"] + sorted(df["Country"].unique())
-    city_list = ["Tous"] + sorted(df["Location"].dropna().unique())  # Vérifier les valeurs vides
-    age_category_list = ["Tous"] + sorted(df["Age_Category"].dropna().unique())
-    music_genre_list = ["Tous"] + sorted(df["Music_Genre"].dropna().unique())
+    # Options de filtre sans "Tous" affiché par défaut
+    festival_list = sorted(df["Festival_Name"].unique())
+    country_list = sorted(df["Country"].unique())
+    city_list = sorted(df["Location"].dropna().unique())  # Vérifier les valeurs vides
+    age_category_list = sorted(df["Age_Category"].dropna().unique())
+    music_genre_list = sorted(df["Music_Genre"].dropna().unique())
 
     # Widgets interactifs pour filtrer
-    selected_festival = st.sidebar.selectbox("🎤 Festival", festival_list)
-    selected_country = st.sidebar.selectbox("🌍 Pays", country_list)
-    selected_city = st.sidebar.selectbox("🏙️ Ville", city_list)
-    selected_age_category = st.sidebar.selectbox("👨‍👩‍👧‍👦 Catégorie d'âge", age_category_list)
-    selected_music_genre = st.sidebar.selectbox("🎶 Genre Musical", music_genre_list)
+    selected_festival = st.sidebar.multiselect("Festival", options=festival_list, placeholder="Choose an option")
+    selected_country = st.sidebar.multiselect("Pays", options=country_list, placeholder="Choose an option")
+    selected_city = st.sidebar.multiselect("Ville", options=city_list, placeholder="Choose an option")
+    selected_age_category = st.sidebar.multiselect("Catégorie d'âge", options=age_category_list, placeholder="Choose an option")
+    selected_music_genre = st.sidebar.multiselect("Genre Musical", options=music_genre_list, placeholder="Choose an option")
 
     # Bouton pour réinitialiser les filtres
     if st.sidebar.button("🔄 Reset Filters"):
-        selected_festival = "Tous"
-        selected_country = "Tous"
-        selected_city = "Tous"
-        selected_age_category = "Tous"
-        selected_music_genre = "Tous"
+        selected_festival = []
+        selected_country = []
+        selected_city = []
+        selected_age_category = []
+        selected_music_genre = []
 
     # Appliquer les filtres à la dataframe
     filtered_df = df.copy()
 
-    if selected_festival != "Tous":
-        filtered_df = filtered_df[filtered_df["Festival_Name"] == selected_festival]
+    if selected_festival:
+        filtered_df = filtered_df[filtered_df["Festival_Name"].isin(selected_festival)]
 
-    if selected_country != "Tous":
-        filtered_df = filtered_df[filtered_df["Country"] == selected_country]
+    if selected_country:
+        filtered_df = filtered_df[filtered_df["Country"].isin(selected_country)]
 
-    if selected_city != "Tous":
-        filtered_df = filtered_df[filtered_df["Location"] == selected_city]
+    if selected_city:
+        filtered_df = filtered_df[filtered_df["Location"].isin(selected_city)]
 
-    if selected_age_category != "Tous":
-        filtered_df = filtered_df[filtered_df["Age_Category"] == selected_age_category]
+    if selected_age_category:
+        filtered_df = filtered_df[filtered_df["Age_Category"].isin(selected_age_category)]
 
-    if selected_music_genre != "Tous":
-        filtered_df = filtered_df[filtered_df["Music_Genre"] == selected_music_genre]
+    if selected_music_genre:
+        filtered_df = filtered_df[filtered_df["Music_Genre"].isin(selected_music_genre)]
 
-    tab1, tab2, tab3 = st.tabs(["Aperçu des performances globales 📈", "Analyse d'audience 👥", "Impact économique et comparaison internationale 💰"])
+
+    tab1, tab2, tab3 = st.tabs(["Aperçu des performances globales 📈", "Analyse d'audience 👥", "Impact économique internationale 💰"])
 
 
     #### BLOC 1 : OVERVIEW AND OVERALL PERFORMANCE ####
@@ -158,7 +159,7 @@ if "Event_concerts" in st.session_state.get("_page", ""):
                     text-align: center;
                     background-color: #f0f2f6;
                     border-radius: 5px;
-                    margin: 0 5px;
+                    margin: 5px;
                 }
                 .metric-label {
                     font-size: 16px;
@@ -291,7 +292,17 @@ if "Event_concerts" in st.session_state.get("_page", ""):
             values="Attendance_Numbers",
             labels={"Age_Category": "Catégorie d'âge", "Attendance_Numbers": "Total Participants"},
             color="Age_Category",  # Assurer la correspondance des couleurs
-            color_discrete_sequence=px.colors.qualitative.Set2
+            color_discrete_sequence=px.colors.qualitative.Set2,
+        )
+        # Personnalisation de la mise en page avec fond semi-transparent
+        fig_pie.update_layout(
+            plot_bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la zone de traçage
+            paper_bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour tout le graphique
+            legend=dict(
+                bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la légende
+                font=dict(color="white")  # Texte blanc pour la lisibilité
+            ),
+            margin=dict(t=50, b=50, l=50, r=50),  # Ajustement des marges
         )
         st.plotly_chart(fig_pie, use_container_width=True)
 
@@ -321,6 +332,16 @@ if "Event_concerts" in st.session_state.get("_page", ""):
             size_max=50,
             category_orders={"Age_Category": age_category_order, "Festival_Name": top_festivals_age["Festival_Name"].tolist()}
         )
+        # Personnalisation de la mise en page avec fond semi-transparent
+        fig_bubble.update_layout(
+            plot_bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la zone de traçage
+            paper_bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour tout le graphique
+            legend=dict(
+                bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la légende
+                font=dict(color="white")  # Texte blanc pour la lisibilité
+            ),
+            margin=dict(t=50, b=50, l=50, r=50),  # Ajustement des marges
+        )
         st.plotly_chart(fig_bubble, use_container_width=True)
 
 
@@ -341,7 +362,7 @@ if "Event_concerts" in st.session_state.get("_page", ""):
 
         # --- Tableau : Analyse des festivals par chiffre d'affaires
         st.subheader("_Analyse des festivals par Chiffre d'affaires_")
-        festival_revenue = filtered_df.groupby(["Flag_URL", "Festival_Name", "Country"])[["Economic_Impact_USD", "Attendance_Numbers"]].sum().reset_index()
+        festival_revenue = filtered_df.groupby(["Flag_URL", "Festival_Name", "Country", "Music_Genre"])[["Economic_Impact_USD", "Attendance_Numbers"]].sum().reset_index()
         festival_revenue = festival_revenue.sort_values("Economic_Impact_USD", ascending=False)
 
         # Configurer l'affichage des images
@@ -352,7 +373,8 @@ if "Event_concerts" in st.session_state.get("_page", ""):
                 "Country": st.column_config.TextColumn("Pays", width="stretch"),
                 "Festival_Name": st.column_config.TextColumn("Festival", width="stretch"),
                 "Economic_Impact_USD": st.column_config.TextColumn("Impact Économique (USD)", width="stretch"),
-                "Attendance_Numbers": st.column_config.TextColumn("Nombre de Participants", width="stretch")
+                "Attendance_Numbers": st.column_config.TextColumn("Nombre de Participants", width="stretch"),
+                "Music_Genre": st.column_config.TextColumn("Genre Musical", width="stretch")
             },
             hide_index=True,
             use_container_width=True
@@ -379,6 +401,16 @@ if "Event_concerts" in st.session_state.get("_page", ""):
                 },
                 height=500
             )
+            # Personnalisation de la mise en page avec fond semi-transparent
+            fig_revenue.update_layout(
+            plot_bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la zone de traçage
+            paper_bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour tout le graphique
+            legend=dict(
+                bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la légende
+                font=dict(color="white")  # Texte blanc pour la lisibilité
+            ),
+            margin=dict(t=50, b=50, l=50, r=50),  # Ajustement des marges
+            )
             st.plotly_chart(fig_revenue, use_container_width=True)
 
         # --- Graphique Bar : Impact Économique par Genre Musical (colonne 2)
@@ -400,6 +432,16 @@ if "Event_concerts" in st.session_state.get("_page", ""):
                     "Economic_Impact_USD":':,',  # Formatage des milliers
                 },
                 height=500
+            )
+            # Personnalisation de la mise en page avec fond semi-transparent
+            fig_music_genre.update_layout(
+            plot_bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la zone de traçage
+            paper_bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour tout le graphique
+            legend=dict(
+                bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la légende
+                font=dict(color="white")  # Texte blanc pour la lisibilité
+            ),
+            margin=dict(t=50, b=50, l=50, r=50),  # Ajustement des marges
             )
             st.plotly_chart(fig_music_genre, use_container_width=True)
 
