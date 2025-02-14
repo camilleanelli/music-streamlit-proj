@@ -99,11 +99,9 @@ if "World" in st.session_state.get("_page", ""):
 
     # define the data with selected country
   if selected_country2:
-    country_name = selected_country2
     data = df_countries_chart[df_countries_chart["country_name"].isin(selected_country2)]
   else:
     data = df_countries_chart
-    country_name = "Tous les pays"
 
   #Choose category
   selected_genre = st.sidebar.multiselect(
@@ -143,7 +141,7 @@ if "World" in st.session_state.get("_page", ""):
 
     # with col1:
       with st.container():
-          st.markdown("##### Top 50")
+          st.markdown(f"##### Top 50 {" ".join(selected_country2)}")
           col1, col2, col3 = st.columns(3)
           with col1:
             selected_position = st.selectbox(
@@ -157,7 +155,7 @@ if "World" in st.session_state.get("_page", ""):
                 order_asc = False
 
           # Table charts
-          df_chart_by_country = data[["position", "name", "title", "streams"]].sort_values("position", ascending=order_asc)
+          df_chart_by_country = data[["position", "name", "title", "streams", "country_name"]].sort_values("position", ascending=order_asc)
           df_chart_by_country = df_chart_by_country.drop_duplicates()
           st.dataframe(df_chart_by_country, hide_index=True)
 
@@ -200,12 +198,11 @@ if "World" in st.session_state.get("_page", ""):
 
     with col1:
       with st.container():
-
           # afficher les genres predominants
           st.markdown("#### Les catégories préférées")
 
           df_genres_pred = data.value_counts('genre').reset_index()[0:15]
-          df_genres_pred = df_genres_pred.sort_values(by="count", ascending=True)
+          df_genres_pred = df_genres_pred.sort_values(by="count", ascending=False)
           with st.container():
             fig_genres = px.bar(
             df_genres_pred,
