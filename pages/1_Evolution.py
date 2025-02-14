@@ -25,20 +25,33 @@ st.set_page_config(layout="wide")
 st.markdown(
     f"""
     <style>
+        /* Définition de l'animation pour le fond d'écran */
+        @keyframes moveBackground {{
+            0% {{
+                background-position: 0% 0%;
+            }}
+            50% {{
+                background-position: 100% 100%;
+            }}
+            100% {{
+                background-position: 0% 0%;
+            }}
+        }}
+
         .stApp {{
             background-image: url("https://img.freepik.com/free-vector/wavy-colorful-background-style_23-2148497521.jpg");
             background-size: cover;
-            background-position: center;
+            background-position: 0% 0%;
             background-attachment: fixed;
             background-color: rgba(0,0,0, 0.5); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
             background-blend-mode: overlay; /* Fusionne l'image et la couleur */
+            animation: moveBackground 40s ease-in-out infinite; /* Animation du fond avec une durée de 20 secondes et un mouvement infini */
         }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Rendre la sidebar de Streamlit semi-transparente afin qu'on puisse voir le background
 st.markdown(
     """
     <style>
@@ -54,6 +67,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 def section_background(title):
     # Ajouter un fond gris aux métriques en utilisant CSS 
@@ -118,7 +132,7 @@ if "engine" not in st.session_state:
 
 if "Evolution" in st.session_state.get("_page", ""):
     # Ajout du titre principal du dashboard
-    st.markdown("<h1 style='text-align: center; color: white;'> International Music Festival - 2024 </h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: white;'> Evolution du charts Top 10 / Semaine</h1>", unsafe_allow_html=True)
     st.write('')
     
     @st.cache_data(show_spinner=False, hash_funcs={datetime: lambda x: x.timestamp()})
@@ -162,7 +176,7 @@ if "Evolution" in st.session_state.get("_page", ""):
 
             # Sélection de la plage de dates dans la sidebar
             date_range = st.sidebar.date_input(
-                "Sélectionnez une plage de dates",
+                "Sélection de la plage de dates",
                 (start_date_default, end_date_default),
                 min_value=min_date,
                 max_value=max_date
@@ -392,7 +406,7 @@ if "Evolution" in st.session_state.get("_page", ""):
 
                     # graph plotly
                     col1, col2, col3, col4 = st.columns([4, 1, 4, 1])
-                    with col3:
+                    with col3:    
                         artist_counts = df['Artist'].value_counts().reset_index()
                         artist_counts.columns = ['Artist', 'Count']
                         top_artists = artist_counts.head(10)
@@ -401,14 +415,22 @@ if "Evolution" in st.session_state.get("_page", ""):
                             x='Count',
                             y='Artist',
                             orientation='h',
-                            title=f"Nombre d'apparition sur la periode du {start_date} au {end_date}",
+                            title=f"Nombre d'apparition sur la période<br>du {start_date.strftime("%d-%m-%Y")} au {end_date.strftime("%d-%m-%Y")}",  # Dates formatées
                             category_orders={'Artist': top_artists['Artist'].tolist()}
                         )
                         fig_bar.update_layout(
-                            xaxis_title=None,  
-                            yaxis_title=None,  
-                            plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
-                            paper_bgcolor="rgba(0,0,0,0)"  # Fond global transparent
+                            xaxis_title=None,
+                            yaxis_title=None,
+                            plot_bgcolor="rgba(0,0,0,0)",  
+                            paper_bgcolor="rgba(0,0,0,0)",  
+                            width=800, 
+                            height=700,
+                            title_font=dict(size=24), 
+                            xaxis_title_font=dict(size=18),  
+                            yaxis_title_font=dict(size=18),  
+                            font=dict(size=14),
+                            title_x=0.3,
+                            title_xanchor='left'
                         )
                         st.plotly_chart(fig_bar)
                     
@@ -424,4 +446,4 @@ if "Evolution" in st.session_state.get("_page", ""):
                             time.sleep(0.02)  # Intervalle entre les frames (20ms)
                             frame += 1
             else:
-                st.warning("Veuillez sélectionner une plage de dates.")
+                st.info("Sélectionner une plage de dates.")

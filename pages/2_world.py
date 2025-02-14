@@ -19,13 +19,27 @@ st.set_page_config(
 st.markdown(
     f"""
     <style>
+        /* Définition de l'animation pour le fond d'écran */
+        @keyframes moveBackground {{
+            0% {{
+                background-position: 0% 0%;
+            }}
+            50% {{
+                background-position: 100% 100%;
+            }}
+            100% {{
+                background-position: 0% 0%;
+            }}
+        }}
+
         .stApp {{
             background-image: url("https://img.freepik.com/free-vector/wavy-colorful-background-style_23-2148497521.jpg");
             background-size: cover;
-            background-position: center;
+            background-position: 0% 0%;
             background-attachment: fixed;
-            background-color: rgba(0,0,0, 0.5);
-            background-blend-mode: overlay;
+            background-color: rgba(0,0,0, 0.5); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
+            background-blend-mode: overlay; /* Fusionne l'image et la couleur */
+            animation: moveBackground 40s ease-in-out infinite; /* Animation du fond avec une durée de 20 secondes et un mouvement infini */
         }}
     </style>
     """,
@@ -35,22 +49,14 @@ st.markdown(
 st.markdown(
     """
     <style>
+        /* Sélectionne la sidebar entière */
         section[data-testid="stSidebar"] {
-            background-color: rgba(0, 0, 0, 0.6);
+            background-color: rgba(0, 0, 0, 0.6); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
         }
-        section[data-testid="stSidebar"] {color: white;
+
+        /* Applique la couleur blanche aux textes pour garantir une bonne lisibilité */
+        section[data-testid="stSidebar"] * {color: white; 
         }
-        div[data-baseweb="tab-list"] {
-            padding: 5px;
-        }
-        div[data-baseweb="tab"][aria-selected="true"] {
-            color: white !important;
-            border-radius: 8px;
-        }
-        div[data-baseweb="tab"][aria-selected="false"] {
-            color: blue;
-            border-radius: 8px;
-    }
     </style>
     """,
     unsafe_allow_html=True
