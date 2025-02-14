@@ -99,11 +99,11 @@ if "Event_concerts" in st.session_state.get("_page", ""):
     music_genre_list = sorted(df["Music_Genre"].dropna().unique())
 
     # Widgets interactifs pour filtrer
-    selected_festival = st.sidebar.multiselect("Festival", options=festival_list, placeholder="Choose an option")
-    selected_country = st.sidebar.multiselect("Pays", options=country_list, placeholder="Choose an option")
-    selected_city = st.sidebar.multiselect("Ville", options=city_list, placeholder="Choose an option")
-    selected_age_category = st.sidebar.multiselect("Catégorie d'âge", options=age_category_list, placeholder="Choose an option")
-    selected_music_genre = st.sidebar.multiselect("Genre Musical", options=music_genre_list, placeholder="Choose an option")
+    selected_festival = st.sidebar.multiselect("Festival", options=festival_list, placeholder="Choisir une option")
+    selected_country = st.sidebar.multiselect("Pays", options=country_list, placeholder="Choisir une option")
+    selected_city = st.sidebar.multiselect("Ville", options=city_list, placeholder="Choisir une option")
+    selected_age_category = st.sidebar.multiselect("Catégorie d'âge", options=age_category_list, placeholder="Choisir une option")
+    selected_music_genre = st.sidebar.multiselect("Genre Musical", options=music_genre_list, placeholder="Choisir une option")
 
     # Bouton pour réinitialiser les filtres
     if st.sidebar.button("🔄 Reset Filters"):
