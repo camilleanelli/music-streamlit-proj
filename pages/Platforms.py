@@ -52,12 +52,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Définissez le chemin de votre image
-image_path =r"C:\Users\nemri\Desktop\projet3\BJ2gNMU.webp"  # Remplacez par le chemin de votre image
-
-# Lire l'image et la convertir en base64
-with open(image_path, "rb") as image_file:
-    encoded_image = base64.b64encode(image_file.read()).decode()
 
 
 # Personnalisation des titres avec CSS
@@ -185,23 +179,26 @@ fig.update_traces(
 )
 
 # Mise en page et ajustements
+# Mise en page et ajustements
 fig.update_layout(
     xaxis_title_font_size=18,
     yaxis_title_font_size=18,
     xaxis_title="Plateformes",
-    yaxis_title="Total des Streams",
+    yaxis=dict(
+        title="Total des Streams",
+        tickformat="~s"  # Suffixes automatiques (K, M, B, T)
+    ),
     xaxis_tickangle=-45,  # Incline les noms des plateformes
-    yaxis_tickformat='.0f',  # Format des nombres sur l'axe Y
-    margin=dict(l=40, r=40, t=40, b=40),
-    bargap=0.2,  # Ajuste l'espacement entre les barres
+    margin=dict(l=40, r=40, t=40, b=40),  # Ajustement des marges
+    bargap=0.2,  # Espacement entre les barres
     width=600,  # Largeur du graphique
     height=400,  # Hauteur du graphique
-    # Modifier le layout pour supprimer le fond
     plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
     paper_bgcolor="rgba(0,0,0,0)"  # Fond global transparent
-
-
 )
+
+
+
 
 # Afficher le graphique dans Streamlit
 st.plotly_chart(fig)
