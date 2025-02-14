@@ -11,7 +11,7 @@ import plotly.express as px
 
 st.session_state["_page"] = "World"
 st.set_page_config(
-    page_title="2_world",
+    page_title="2_World",
     page_icon="🌏",
     layout="wide"
 )
