@@ -171,44 +171,52 @@ rename_dict = {
 platform_comparaison.index = platform_comparaison.index.map(rename_dict)
 st.write(f"Comparaison des plateformes de streaming")
 # Création du graphique
+def format_large_number(num):
+    if num >= 1_000_000_000:  # Milliards
+        return f"{num / 1_000_000_000:.1f}B"
+    elif num >= 1_000_000:  # Millions
+        return f"{num / 1_000_000:.1f}M"
+    elif num >= 1_000:  # Milliers
+        return f"{num / 1_000:.1f}K"
+    return f"{num:.0f}"  # Valeurs normales sans décimales
+
+# 🟢 Appliquer la fonction sur les valeurs de texte
+formatted_text = [format_large_number(val) for val in platform_comparaison.values]
+
+# Création du graphique
 fig = px.bar(
-    x=platform_comparaison.index,  # Plateformes sur l'axe X (renommées)
-    y=platform_comparaison.values,  # Total des streams sur l'axe Y
-    labels={'x': 'Plateformes', 'y': 'Total des Streams'},
-    text=platform_comparaison.values,  # Affiche les valeurs sur les barres
-    template='plotly_dark'  # Style sombre
+    x=platform_comparaison.index,  
+    y=platform_comparaison.values,  # Valeurs d'origine sur l'axe Y
+    labels={'x': 'Plateformes', 'y': 'Total des Streams'},  
+    text=formatted_text,  # Texte dynamique affiché sur les barres
+    template='plotly_dark'
 )
 
-# Personnalisation des couleurs
+# Personnalisation des couleurs et affichage des valeurs
 fig.update_traces(
-    textposition='outside',  # Texte à l'extérieur des barres
-    texttemplate='%{text:.0f}',  # Texte arrondi
+    textposition='outside',  # Texte au sommet des barres
+    texttemplate='%{text}',  # Utilisation des valeurs préformatées
     marker=dict(
-        color=["#0077B5", '#636EFA', '#69C9D0'],  # Spotify en bleu, YouTube en violet, TikTok en turquoise
-        line=dict(width=0.2, color='DarkSlateGrey')  # Bordures des barres
+        color=["#0077B5", '#636EFA', '#69C9D0'],
+        line=dict(width=0.2, color='DarkSlateGrey')
     )
 )
 
 # Mise en page et ajustements
-# Mise en page et ajustements
 fig.update_layout(
-    xaxis_title_font_size=18,
-    yaxis_title_font_size=18,
     xaxis_title="Plateformes",
     yaxis=dict(
         title="Total des Streams",
-        tickformat="~s"  # Suffixes automatiques (K, M, B, T)
+        tickformat="~s"  # Format automatique avec K, M, B
     ),
-    xaxis_tickangle=-45,  # Incline les noms des plateformes
-    margin=dict(l=40, r=40, t=40, b=40),  # Ajustement des marges
-    bargap=0.2,  # Espacement entre les barres
-    width=600,  # Largeur du graphique
-    height=400,  # Hauteur du graphique
-    plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
-    paper_bgcolor="rgba(0,0,0,0)"  # Fond global transparent
+    xaxis_tickangle=-45,
+    margin=dict(l=40, r=40, t=40, b=40),
+    bargap=0.2,
+    width=600,
+    height=400,
+    plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)"
 )
-
-
 
 
 # Afficher le graphique dans Streamlit
@@ -386,22 +394,38 @@ st.plotly_chart(fig_engagement)
 top_artists = df_filtered.groupby("artist")[
     ["spotify_streams", "youtube_views", "tiktok_views", "shazam_counts"]
 ].sum().sum(axis=1).sort_values(ascending=False).head(10)
-st.write(f"Top 10 des artistes les plus streamés",)
+
+# Appliquer la fonction de mise à l'échelle aux valeurs affichées
+formatted_text = [format_large_number(val) for val in top_artists.values]
+
 # Création du graphique
 fig_top_artists = px.bar(
     x=top_artists.index,
-    y=top_artists.values,
+    y=top_artists.values,  # Valeurs originales sur l'axe Y
     labels={'x': 'Artistes', 'y': 'Total des streams'},
-    text_auto=True,
-    width=600,  # Largeur du graphique
-    height=400  # Hauteur du graphique
+    text=formatted_text,  # Texte mis à l'échelle affiché sur les barres
+    width=600,  
+    height=400  
 )
 
-# Ajustement de l'espacement entre les barres
+# Ajustement des styles
+fig_top_artists.update_traces(
+    textposition='outside',  # Affichage du texte au-dessus des barres
+    texttemplate='%{text}',  # Utilisation des valeurs formatées
+    marker=dict(color='#636EFA', line=dict(width=0.2, color='DarkSlateGrey')) # Couleur des barres
+)
+st.write(f"Top 10 des artistes les plus streamés",)
+
+# Ajustement de l'espacement et des axes
 fig_top_artists.update_layout(
-    bargap=0.2 ,
-    plot_bgcolor="rgba(0,0,0,0)",  # Zone centrale transparente
-    paper_bgcolor="rgba(0,0,0,0)",# Espacement entre les barres (0.0 pour collées, 1.0 pour très espacées)
+    bargap=0.2,  # Espacement entre les barres
+    yaxis=dict(
+        title="Total des Streams",
+        tickformat="~s"  # Format automatique (K, M, B) pour les ticks de l'axe Y
+    ),
+    xaxis_tickangle=-45,  # Inclinaison des noms d'artistes pour lisibilité
+    plot_bgcolor="rgba(0,0,0,0)",  
+    paper_bgcolor="rgba(0,0,0,0)"
 )
 
 # Affichage du graphique avec Streamlit
