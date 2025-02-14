@@ -137,11 +137,8 @@ if "World" in st.session_state.get("_page", ""):
 
   with tab1:
     # Les Tops a travers le monde
-    # col1, col2 = st.columns(2)
-
-    # with col1:
       with st.container():
-          st.markdown(f"##### Top 50 {" ".join(selected_country2)}")
+          st.markdown(f"##### Top 50 {" ".join(selected_country2)} :earth_asia:")
           col1, col2, col3 = st.columns(3)
           with col1:
             selected_position = st.selectbox(
@@ -165,7 +162,7 @@ if "World" in st.session_state.get("_page", ""):
         st.markdown("##### Indice de popularité")
         with st.expander("Qu'est ce que le SPI ?"):
           st.write('''
-              L'Indice de popularité de Spotify (SPI) est une mesure de performance rare que Spotify montre aux artistes.
+              L'Indice de popularité de Spotify (SPI) est une mesure de performance  que Spotify montre aux artistes.
               Le SPI est une échelle de 0 à 100,
               qui aide l'équipe Spotify à mieux comparer et classer les chansons sur la platform
               '''
