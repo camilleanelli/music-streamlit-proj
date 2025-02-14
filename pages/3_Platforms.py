@@ -17,41 +17,52 @@ conn = psycopg2.connect(
 )
 cursor = conn.cursor()
 st.set_page_config(page_title="Platforms", page_icon="🎤", layout="wide")
-#une image background depuis une URL en utilisant CSS
+
 st.markdown(
     f"""
     <style>
+        /* Définition de l'animation pour le fond d'écran */
+        @keyframes moveBackground {{
+            0% {{
+                background-position: 0% 0%;
+            }}
+            50% {{
+                background-position: 100% 100%;
+            }}
+            100% {{
+                background-position: 0% 0%;
+            }}
+        }}
+
         .stApp {{
             background-image: url("https://img.freepik.com/free-vector/wavy-colorful-background-style_23-2148497521.jpg");
             background-size: cover;
-            background-position: center;
+            background-position: 0% 0%;
             background-attachment: fixed;
-            background-color: rgba(0,0,0, 0.5); 
-            background-blend-mode: overlay; 
+            background-color: rgba(0,0,0, 0.5); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
+            background-blend-mode: overlay; /* Fusionne l'image et la couleur */
+            animation: moveBackground 40s ease-in-out infinite; /* Animation du fond avec une durée de 20 secondes et un mouvement infini */
         }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
-#Rendre la sidebar de Streamlit semi-transparente afin qu'on puisse voir le background
 st.markdown(
     """
     <style>
-        /* Personnalisation de la barre latérale */
+        /* Sélectionne la sidebar entière */
         section[data-testid="stSidebar"] {
-            background-color: rgba(0, 0, 0, 0.6); /* Fond noir transparent */
-            color: white; /* Texte en blanc */
+            background-color: rgba(0, 0, 0, 0.6); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
         }
-        /* Style pour le texte dans la sidebar */
-        section[data-testid="stSidebar"] * {
-            color: white; /* Applique le blanc à tous les éléments enfants */
+
+        /* Applique la couleur blanche aux textes pour garantir une bonne lisibilité */
+        section[data-testid="stSidebar"] * {color: white; 
         }
     </style>
     """,
     unsafe_allow_html=True
 )
-
 
 
 # Personnalisation des titres avec CSS

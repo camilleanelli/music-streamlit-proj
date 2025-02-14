@@ -11,24 +11,36 @@ st.set_page_config(
     page_icon="👋",
     )
 
-# Ajouter une image background depuis une URL en utilisant CSS 
 st.markdown(
     f"""
     <style>
+        /* Définition de l'animation pour le fond d'écran */
+        @keyframes moveBackground {{
+            0% {{
+                background-position: 0% 0%;
+            }}
+            50% {{
+                background-position: 100% 100%;
+            }}
+            100% {{
+                background-position: 0% 0%;
+            }}
+        }}
+
         .stApp {{
             background-image: url("https://img.freepik.com/free-vector/wavy-colorful-background-style_23-2148497521.jpg");
             background-size: cover;
-            background-position: center;
+            background-position: 0% 0%;
             background-attachment: fixed;
             background-color: rgba(0,0,0, 0.5); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
             background-blend-mode: overlay; /* Fusionne l'image et la couleur */
+            animation: moveBackground 40s ease-in-out infinite; /* Animation du fond avec une durée de 20 secondes et un mouvement infini */
         }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Rendre la sidebar de Streamlit semi-transparente afin qu'on puisse voir le background
 st.markdown(
     """
     <style>
@@ -44,6 +56,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 def section_background(title):
     # Ajouter un fond gris aux métriques en utilisant CSS 
@@ -76,18 +89,88 @@ def section_background(title):
         """, unsafe_allow_html=True)
 
 # Ajout du titre principal du dashboard
-st.markdown("<h1 style='text-align: center; color: white;'> Projet - Analyse Music </h1>", unsafe_allow_html=True)
+import streamlit as st
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["Présentation 👥", "Objectif et enjeux 🎯", "Rétroplanning 📅", "Démarche et Méthodologie 📝", "🤖 Diagramme Mage-Ai"])
+st.markdown(
+    """
+    <style>
+        /* Définition de l'animation de vibration pour le mot "Music" */
+        @keyframes vibration {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Animation pour les images autour du mot Music */
+        @keyframes rotateImages {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* Classe pour appliquer l'animation au mot "Music" */
+        .animated-music {
+            display: inline-block;
+            font-weight: bold;
+            font-size: 40px;
+            color: #ff6347; /* Tomate, une couleur vibrante */
+            animation: vibration 0.5s linear infinite; /* Animation rapide en boucle infinie */
+            text-shadow: 0 0 15px rgba(255, 99, 71, 0.8), 0 0 30px rgba(255, 99, 71, 0.6); /* Lueur autour du texte */
+        }
+
+        /* Classe pour les images autour du mot Music */
+        .music-icon {
+            width: 40px;
+            height: 40px;
+            animation: rotateImages 4s linear infinite; /* Animation de rotation */
+            margin: 0 15px; /* Espacement entre les icônes */
+            filter: drop-shadow(0 0 15px rgba(255, 99, 71, 0.8)); /* Lueur autour des icônes */
+        }
+
+        /* Centrer le titre et les images */
+        .title-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Ajouter le titre avec le mot "Music" et les icônes autour
+st.markdown(
+    """
+    <h1 style="text-align: center; color: white;">Analyse</h1>
+    <div class="title-container">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/guitar.png" class="music-icon" />
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/saxophone.png" class="music-icon" />
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/music.png" class="music-icon" style="margin-right: 10%" />
+        <h1 style="text-align: center; color: white;">
+           <span class="animated-music">Music</span>
+        </h1>
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/music.png" class="music-icon" />
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/saxophone.png" class="music-icon" />
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/guitar.png" class="music-icon" />
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["Présentation 👥", "Objectif et enjeux 🎯", "Rétroplanning 📅", "Démarche et Méthodologie 📝", "Diagramme 🤖"])
 
 #### PRESENTATION DE L'EQUIPE ####
 with tab1: 
     cols = st.columns(4)
     teammates = [
-        ("Olivier", "Lemperriere", "https://img.freepik.com/photos-gratuite/amis-age-moyen-s-amusant_23-2149150938.jpg"),
         ("Elisabeth", "Tran", "https://img.freepik.com/photos-gratuite/femme-heureuse-coup-moyen_23-2149007441.jpg"),
         ("Meriem", "Nemri", "https://img.freepik.com/photos-gratuite/smiley-femme-posant-au-bord-plage_23-2148629772.jpg"),
-        ("Camille", "Anelli", "https://img.freepik.com/photos-gratuite/jeune-belle-femme-dodue-aimant-son-corps_23-2149180832.jpg")
+        ("Camille", "Anelli", "https://img.freepik.com/photos-gratuite/jeune-belle-femme-dodue-aimant-son-corps_23-2149180832.jpg"),
+        ("Olivier", "Lemperriere", "https://img.freepik.com/photos-gratuite/amis-age-moyen-s-amusant_23-2149150938.jpg")
     ]
     for col, (first_name, last_name, img_url) in zip(cols, teammates):
         with col:

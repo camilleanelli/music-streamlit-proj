@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import folium
-from streamlit_folium import folium_static
-from sqlalchemy import create_engine, select, text
+from sqlalchemy import create_engine, text
+from streamlit_folium import st_folium
+
 
 # Configuration de la page 
 st.session_state["_page"] = "Event_concerts"
@@ -22,20 +23,33 @@ DB_CONFIG = {
 st.markdown(
     f"""
     <style>
+        /* Définition de l'animation pour le fond d'écran */
+        @keyframes moveBackground {{
+            0% {{
+                background-position: 0% 0%;
+            }}
+            50% {{
+                background-position: 100% 100%;
+            }}
+            100% {{
+                background-position: 0% 0%;
+            }}
+        }}
+
         .stApp {{
             background-image: url("https://img.freepik.com/free-vector/wavy-colorful-background-style_23-2148497521.jpg");
             background-size: cover;
-            background-position: center;
+            background-position: 0% 0%;
             background-attachment: fixed;
             background-color: rgba(0,0,0, 0.5); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
             background-blend-mode: overlay; /* Fusionne l'image et la couleur */
+            animation: moveBackground 40s ease-in-out infinite; /* Animation du fond avec une durée de 20 secondes et un mouvement infini */
         }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Rendre la sidebar de Streamlit semi-transparente afin qu'on puisse voir le background
 st.markdown(
     """
     <style>
@@ -51,6 +65,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 
 # Création de la connexion
@@ -266,7 +281,7 @@ if "Event_concerts" in st.session_state.get("_page", ""):
         # Afficher la carte dans Streamlit
         # Utiliser `st.container()` pour forcer la pleine largeur
         with st.container():
-            folium_static(m, width=1200, height=600)  # Largeur étendue pour remplir la page
+            st_folium(m, width=1200, height=600)
 
 
     #### BLOC 2 : AUDIENCE AND TREND ANALYSIS ####
