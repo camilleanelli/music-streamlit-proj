@@ -104,7 +104,7 @@ if "Event_concerts" in st.session_state.get("_page", ""):
     st.markdown("<h1 style='text-align: center; color: white;'> International Music Festival - 2024 </h1>", unsafe_allow_html=True)
 
     # Sidebar - Filtres
-    st.sidebar.header("🔍 Filtres Interactifs")
+    st.sidebar.header("Filtres")
 
     # Options de filtre sans "Tous" affiché par défaut
     festival_list = sorted(df["Festival_Name"].unique())
@@ -114,14 +114,14 @@ if "Event_concerts" in st.session_state.get("_page", ""):
     music_genre_list = sorted(df["Music_Genre"].dropna().unique())
 
     # Widgets interactifs pour filtrer
-    selected_festival = st.sidebar.multiselect("Festival", options=festival_list, placeholder="Choisir une option")
-    selected_country = st.sidebar.multiselect("Pays", options=country_list, placeholder="Choisir une option")
-    selected_city = st.sidebar.multiselect("Ville", options=city_list, placeholder="Choisir une option")
-    selected_age_category = st.sidebar.multiselect("Catégorie d'âge", options=age_category_list, placeholder="Choisir une option")
-    selected_music_genre = st.sidebar.multiselect("Genre Musical", options=music_genre_list, placeholder="Choisir une option")
+    selected_festival = st.sidebar.multiselect("Festival", options=festival_list, placeholder="Tous")
+    selected_country = st.sidebar.multiselect("Pays", options=country_list, placeholder="Tous")
+    selected_city = st.sidebar.multiselect("Ville", options=city_list, placeholder="Tous")
+    selected_age_category = st.sidebar.multiselect("Catégorie d'âge", options=age_category_list, placeholder="Tous")
+    selected_music_genre = st.sidebar.multiselect("Genre Musical", options=music_genre_list, placeholder="Tous")
 
     # Bouton pour réinitialiser les filtres
-    if st.sidebar.button("🔄 Reset Filters"):
+    if st.sidebar.button("🔄 Réinitialiser les filtres"):
         selected_festival = []
         selected_country = []
         selected_city = []
@@ -263,7 +263,7 @@ if "Event_concerts" in st.session_state.get("_page", ""):
 
         # Créer une carte Folium centrée sur un point moyen des festivals
         m = folium.Map(location=[filtered_df["Latitude_Location"].mean(), 
-                                filtered_df["Longitude_Location"].mean()], zoom_start=4)
+                                filtered_df["Longitude_Location"].mean()], zoom_start=2)
 
         # Ajouter les marqueurs des festivals
         for _, row in filtered_df.iterrows():
@@ -281,7 +281,7 @@ if "Event_concerts" in st.session_state.get("_page", ""):
         # Afficher la carte dans Streamlit
         # Utiliser `st.container()` pour forcer la pleine largeur
         with st.container():
-            st_folium(m, width=1200, height=600)
+            st_folium(m, width=1200, height=500)
 
 
     #### BLOC 2 : AUDIENCE AND TREND ANALYSIS ####
@@ -381,8 +381,13 @@ if "Event_concerts" in st.session_state.get("_page", ""):
         festival_revenue = festival_revenue.sort_values("Economic_Impact_USD", ascending=False)
 
         # Configurer l'affichage des images
+        styled_df = (festival_revenue.style.format({
+                "Economic_Impact_USD": "${:,.0f}", 
+                "Attendance_Numbers": "{:,.0f}"
+                })).background_gradient(subset=["Economic_Impact_USD"], cmap="Greens")
+        
         st.dataframe(
-            festival_revenue.style.format({"Economic_Impact_USD": "${:,.0f}", "Attendance_Numbers": "{:,.0f}"}),
+            styled_df,
             column_config={
                 "Flag_URL": st.column_config.ImageColumn("Drapeau", width=40),
                 "Country": st.column_config.TextColumn("Pays", width="stretch"),
