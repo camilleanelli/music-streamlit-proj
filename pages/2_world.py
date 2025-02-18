@@ -103,7 +103,8 @@ if "World" in st.session_state.get("_page", ""):
         default="Global"
     )
 
-    # define the data with selected country
+  st.sidebar.header("🔍 Filtres Interactifs")
+  # define the data with selected country
   if selected_country2:
     data = df_countries_chart[df_countries_chart["country_name"].isin(selected_country2)]
   else:
@@ -111,7 +112,7 @@ if "World" in st.session_state.get("_page", ""):
 
   #Choose category
   selected_genre = st.sidebar.multiselect(
-        "Catégorie musicale",
+        ":top: Catégorie musicale",
         list(data["genre"].sort_values(ascending=True).unique()),
         placeholder="Sélectionner une catégorie",
         default=None
