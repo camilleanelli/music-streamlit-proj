@@ -3,14 +3,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sqlalchemy import create_engine, text
 import pandas as pd
+
 # Configuration de la page
 st.session_state["_page"] = "Home"
 st.set_page_config(
-    layout="centered",
-    page_title="Home",
-    page_icon="👋",
-    )
+    page_title="Music Data Insights",
+    page_icon="🎶",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
+
+# Configuration de l'image de fond et de l'animation
 st.markdown(
     f"""
     <style>
@@ -41,6 +45,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
+# Configuration de la sidebar
 st.markdown(
     """
     <style>
@@ -58,69 +64,26 @@ st.markdown(
 )
 
 
-def section_background(title):
-    # Ajouter un fond gris aux métriques en utilisant CSS 
-    st.markdown("""
-        <style>
-            .metric-container {
-                display: flex;
-                justify-content: space-between;
-                align-items: stretch;
-                margin-top: 10px;
-            }
-            .metric-box {
-                background-color: #f0f2f6;
-                padding: 10px;
-                border-radius: 10px;
-                text-align: center;
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                height: 90%;
-                min-height: 90px; /* Définit une hauteur minimale */
-            }
-            .metric-value {
-                font-size: 20px;
-                font-weight: bold;
-                color: #0e1117;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-
-# Ajout du titre principal du dashboard
-import streamlit as st
-
+# Configuration du Titre principal du dashboard et des icons animés
 st.markdown(
     """
     <style>
-        /* Définition de l'animation de vibration pour le mot "Music" */
-        @keyframes vibration {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
-            100% { transform: translateX(0); }
-        }
-
-        /* Animation pour les images autour du mot Music */
+        /* Animation pour les images autour du Titre */
         @keyframes rotateImages {
             0% { transform: rotate(0deg); }
             50% { transform: rotate(360deg); }
             100% { transform: rotate(0deg); }
         }
 
-        /* Classe pour appliquer l'animation au mot "Music" */
+        /* Classe pour appliquer l'animation au Titre */
         .animated-music {
             display: inline-block;
             font-weight: bold;
-            font-size: 40px;
-            color: #ff6347; /* Tomate, une couleur vibrante */
+            font-size: 50px;
             animation: vibration 0.5s linear infinite; /* Animation rapide en boucle infinie */
-            text-shadow: 0 0 15px rgba(255, 99, 71, 0.8), 0 0 30px rgba(255, 99, 71, 0.6); /* Lueur autour du texte */
         }
 
-        /* Classe pour les images autour du mot Music */
+        /* Classe pour les images autour du Titre */
         .music-icon {
             width: 40px;
             height: 40px;
@@ -141,16 +104,16 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Ajouter le titre avec le mot "Music" et les icônes autour
+
+# Ajouter le titre avec le mot "Music Data Insights" et les icônes autour
 st.markdown(
     """
-    <h1 style="text-align: center; color: white;">Analyse</h1>
     <div class="title-container">
         <img src="https://img.icons8.com/ios-filled/50/ffffff/guitar.png" class="music-icon" />
         <img src="https://img.icons8.com/ios-filled/50/ffffff/saxophone.png" class="music-icon" />
         <img src="https://img.icons8.com/ios-filled/50/ffffff/music.png" class="music-icon" style="margin-right: 10%" />
         <h1 style="text-align: center; color: white;">
-           <span class="animated-music">Music</span>
+           <span class="animated-music">Music Data Insights</span>
         </h1>
         <img src="https://img.icons8.com/ios-filled/50/ffffff/music.png" class="music-icon" />
         <img src="https://img.icons8.com/ios-filled/50/ffffff/saxophone.png" class="music-icon" />
@@ -159,7 +122,130 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+       
 
+# Configuration CSS harmonisé pour toute l'application
+st.markdown("""
+    <style>
+    /* Style des cartes */
+    .custom-card {
+        background-color: #f0f2f6;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+        transition: transform 0.2s ease;
+        color: #0e1117;
+    }
+    .custom-card h1, 
+    .custom-card h2, 
+    .custom-card h3,
+    .custom-card strong {
+    color: #431543
+    }
+            
+    .custom-card:hover {
+        transform: translateY(-2px);
+        color: #0e1117;
+    }
+    
+    /* Style des boutons Streamlit */
+    .stButton button {
+        width: 100%;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        padding: 1rem 2rem;
+        transition: all 0.2s ease;
+        color: #0e1117;
+    }
+    .stButton button:hover {
+        background-color: #7A577A;;
+        transform: translateY(-2px);
+        color: #0e1117
+    }
+    
+    /* Style des métriques */
+    .metric-container {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 0.5rem 0;
+        color: #0e1117                
+    }
+    
+    /* Style du ticker */
+    .ticker-container {
+        background-color: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(5px);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        color: #0e1117;
+    }
+    
+    /* Style des onglets */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2rem;
+        color: #0e1117
+    }
+    .stTabs [data-baseweb="tab"] {
+        padding: 1rem 2rem;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.markdown("""
+        <div class="custom-card">
+            <h3>📈 Évolution</h3>
+            <p>Suivez en temps réel les titres les plus populaires de la semaine. Découvrez l'évolution des classements et identifiez les morceaux qui dominent les plateformes de streaming.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("Accéder à l'Évolution", key="btn_evolution", use_container_width=True):
+        st.switch_page("pages/1_Evolution.py")
+
+with col2:
+    st.markdown("""
+        <div class="custom-card">
+            <h3>🌍 Monde </h3>
+            <p>Explorez les artistes et chansons les plus écoutés à travers le monde. Comparez les tendances musicales par pays et observez les dynamiques culturelles du marché global.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("Accéder au Monde", key="btn_monde", use_container_width=True):
+        st.switch_page("pages/2_world.py")
+
+with col3:
+    st.markdown("""
+        <div class="custom-card">
+            <h3>🎧 Plateforme</h3>
+            <p> Analysez la répartition des écoutes sur les principales plateformes de streaming (Spotify, Youtube, Deezer,…). Identifiez la performance des titres selon les différents services.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    if st.button("Accéder aux Plateformes", key="btn_plateforme", use_container_width=True):
+        st.switch_page("pages/3_Platforms.py")
+
+with col4:
+    st.markdown("""
+    <div class="custom-card">
+        <h3>🎤 Festival</h3>
+        <p>Plongez dans l'univers des festivals de musique ! Découvrez les événements majeurs, leurs statistiques d'affluence, leur impact économique et les genres musicaux les plus représentés .</p>
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button("Accéder aux Festivals", key="btn_festivals", use_container_width=True):
+        st.switch_page("pages/4_Event_concerts.py")
+
+st.divider()
+
+st.markdown("""
+    <div class="custom-card">
+        <h2>Contexte et présentation du projet </h2>
+        </div>
+""", unsafe_allow_html=True)
+
+st.divider()
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["Présentation 👥", "Objectif et enjeux 🎯", "Rétroplanning 📅", "Démarche et Méthodologie 📝", "Diagramme 🤖"])
 
@@ -174,54 +260,56 @@ with tab1:
     ]
     for col, (first_name, last_name, img_url) in zip(cols, teammates):
         with col:
-            st.image(img_url, width=150)
-            background_html = f"""
-            <div class="metric-container">
-                <div class="metric-box">
-                    <div class="metric-value">{first_name}</div>
-                    <div class="metric-value">{last_name}</div>
+            # Centrage de l'image
+            st.markdown(f"""
+                <div style='display: flex; justify-content: center; margin-bottom: 10px;'>
+                    <img src='{img_url}' width='150' style='border-radius: 10px;'>
                 </div>
-            </div>
-            """
-            st.markdown(background_html, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
+            # Utilisation du CSS harmonisé pour afficher les noms
+            st.markdown(f"""
+                <div class="custom-card" style='text-align: center;'>
+                    {first_name}<br>{last_name}
+                </div>
+            """, unsafe_allow_html=True)
 
 #### OBJECTIF ET ENJEUX ####
 with tab2:
-    background_html = f"""
-    <div class="metric-container">
-        <div class="metric-box">
-            <div class="metric-value">Objectif du projet</div>
-        </div>
-    </div>
-    """
-    st.markdown(background_html,unsafe_allow_html=True)
+    # Affichage du titre "Objectif du projet" avec le style harmonisé
     st.markdown("""
-    - **Développer une application d'analyse de données complète, de la collecte à la visualisation**  
-    - **Expérimenter l'ensemble du workflow data : collecte, nettoyage, stockage, analyse et visualisation**  
-    - **Mettre en place une infrastructure pour gérer les données efficacement**  
-    - **Proposer une interface interactive permettant l'exploration et la personnalisation des visualisations**
+        <div class="custom-card" style='text-align: center;'>
+            Objectif du projet
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Liste des objectifs
+    st.markdown("""
+    - Concevoir une application complète d'analyse de données musicales, de la collecte à la visualisation interactive.  
+    - Expérimenter l'ensemble du cycle de vie des données : acquisition, traitement, stockage, analyse et restitution.  
+    - Automatiser la gestion des données grâce à un pipeline ETL performant et adaptable.  
+    - Offrir une interface intuitive permettant d'explorer les tendances musicales et d'adapter les visualisations aux besoins des utilisateurs.  
     """, unsafe_allow_html=False)
 
-    background_html = f"""
-    <div class="metric-container">
-        <div class="metric-box">
-            <div class="metric-value">Enjeux du projet</div>
-        </div>
-    </div>
-    """
-    st.markdown(background_html,unsafe_allow_html=True)
+    # Affichage du titre "Enjeux du projet" avec le style harmonisé
     st.markdown("""
-    - **Assurer la collecte de données de qualité et leur mise à jour régulière**  
-    - **Structurer et nettoyer les données pour une exploitation optimale**  
-    - **Offrir une interface intuitive et des visualisations dynamiques**
+        <div class="custom-card" style='text-align: center;'>
+            Enjeux du projet
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Liste des enjeux
+    st.markdown("""
+    - **Fiabilité et actualisation des données** : Assurer la collecte et la mise à jour régulière des informations pour garantir des analyses pertinentes.  
+    - **Qualité et structuration des données** : Optimiser le nettoyage et l'organisation des données pour une exploitation efficace.  
+    - **Accessibilité et expérience utilisateur** : Développer une interface fluide et interactive pour une exploration intuitive des tendances.  
     """, unsafe_allow_html=False)
 
 
 #### RETROPLANNING ####
 with tab3: 
     cols = st.columns(4)
-    weeks = ["Sem 1", "Sem 2", "Sem 3", "Sem 4"]
+    weeks = ["Semaine 1", "Semaine 2", "Semaine 3", "Semaine 4"]
     descriptions = [
         "Acquisition des Données, Traitement et Nettoyage",
         "Mise en place d'une Infrastructure de Données",
@@ -230,69 +318,62 @@ with tab3:
     ]
     for col, week, desc in zip(cols, weeks, descriptions):
         with col:
-            background_html = f"""
-            <div class="metric-container">
-                <div class="metric-box">
-                    <div class="metric-value">{week}</div>
+            st.markdown(f"""
+                <div class="custom-card" style='text-align: center;'>
+                    {week}
                 </div>
-            """
-            st.markdown(background_html, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
             st.markdown(f"<p style='text-align: center;'>{desc}</p>", unsafe_allow_html=True)
-
 
 #### DEMARCHE, OUTILS ET EXPLORATION DES DONNEES ####
 with tab4:
-    section_background("Démarche et Méthodologie")
     cols = st.columns(3)
+    # Étapes réalisées
     with cols[0]:
-        background1_html = f"""
-        <div class="metric-container">
-            <div class="metric-box">
-                <div class="metric-value">Étapes réalisées </div>
+        st.markdown(f"""
+            <div class="custom-card" style='text-align: center;'>
+                Étapes réalisées
             </div>
-        </div>
-        """
-        st.markdown(background1_html, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+
         st.markdown("""
-        1. **Acquisition des Données** 
-        2. **Intégration et traitement dans Mage-AI (nettoyage et update PostgreSQL)**
-        3. **Recherche de KPI pertinents**
-        4. **Création de l'interface Streamlit**
-        5. **Test de l'interface**
+        1. **Acquisition des Données**  
+        2. **Intégration et traitement dans Mage-AI (nettoyage et update PostgreSQL)**  
+        3. **Recherche de KPI pertinents**  
+        4. **Création de l'interface Streamlit**  
+        5. **Test de l'interface**  
         """, unsafe_allow_html=False)
 
-
+    # Outils utilisés
     with cols[1]:
-        background1_html = f"""
-        <div class="metric-container">
-            <div class="metric-box">
-                <div class="metric-value">Outils Utilisés</div>
+        st.markdown(f"""
+            <div class="custom-card" style='text-align: center;'>
+                Outils Utilisés
             </div>
-        </div>
-        """
-        st.markdown(background1_html, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+
         st.markdown("""
-        - **🐍 Python (pandas, numpy)**
+        - **🐍 Python (pandas, numpy)**  
         - **🐳 Docker**  
-        - **🤖 Mage-Ai**
-        - **🌐 PostgreSQL**
-        - **📺 Streamlit**
+        - **🤖 Mage-AI**  
+        - **🌐 PostgreSQL**  
+        - **📺 Streamlit**  
         """, unsafe_allow_html=False)
 
+    # Collecte des données
     with cols[2]:
-        background1_html = f"""
-        <div class="metric-container">
-            <div class="metric-box">
-                <div class="metric-value">Collecte des Données</div>
+        st.markdown(f"""
+            <div class="custom-card" style='text-align: center;'>
+                Collecte des Données
             </div>
-        </div>
-        """
-        st.markdown(background1_html, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+
         st.markdown("""
-        - **Fichiers CSV**
+        - **Fichiers CSV**  
         - **Web scraping**  
         - **API REST**  
         """, unsafe_allow_html=False)
+
         
 ### Diagramme Mage-AI
 

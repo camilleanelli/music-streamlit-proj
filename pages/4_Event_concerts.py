@@ -3,12 +3,17 @@ import pandas as pd
 import plotly.express as px
 import folium
 from sqlalchemy import create_engine, text
-from streamlit_folium import st_folium
+from streamlit_folium import st_folium, folium_static
 
 
 # Configuration de la page 
 st.session_state["_page"] = "Event_concerts"
-st.set_page_config(layout="wide")
+
+st.set_page_config(
+    page_title="Festival",
+    page_icon="🎤",
+    layout="wide"
+)
 
 DB_CONFIG = {
     'user': 'postgres',
@@ -50,6 +55,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# Mettre la sidebar semi-transparent
 st.markdown(
     """
     <style>
@@ -101,7 +107,7 @@ if "Event_concerts" in st.session_state.get("_page", ""):
     df = load_data()
 
     # Ajout du titre principal du dashboard
-    st.markdown("<h1 style='text-align: center; color: white;'> International Music Festival - 2024 </h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: white;'> Analyse des festivals à travers le monde </h1>", unsafe_allow_html=True)
 
     # Sidebar - Filtres
     st.sidebar.header("Filtres")
@@ -120,29 +126,17 @@ if "Event_concerts" in st.session_state.get("_page", ""):
     selected_age_category = st.sidebar.multiselect("Catégorie d'âge", options=age_category_list, placeholder="Tous")
     selected_music_genre = st.sidebar.multiselect("Genre Musical", options=music_genre_list, placeholder="Tous")
 
-    # Bouton pour réinitialiser les filtres
-    if st.sidebar.button("🔄 Réinitialiser les filtres"):
-        selected_festival = []
-        selected_country = []
-        selected_city = []
-        selected_age_category = []
-        selected_music_genre = []
-
     # Appliquer les filtres à la dataframe
     filtered_df = df.copy()
 
     if selected_festival:
         filtered_df = filtered_df[filtered_df["Festival_Name"].isin(selected_festival)]
-
     if selected_country:
         filtered_df = filtered_df[filtered_df["Country"].isin(selected_country)]
-
     if selected_city:
         filtered_df = filtered_df[filtered_df["Location"].isin(selected_city)]
-
     if selected_age_category:
         filtered_df = filtered_df[filtered_df["Age_Category"].isin(selected_age_category)]
-
     if selected_music_genre:
         filtered_df = filtered_df[filtered_df["Music_Genre"].isin(selected_music_genre)]
 
@@ -230,8 +224,12 @@ if "Event_concerts" in st.session_state.get("_page", ""):
             country_impact = country_impact.sort_values("Economic_Impact_USD", ascending=False)
             
             # Configurer l'affichage des images
+            styled_country_impact = country_impact.style.format({"Economic_Impact_USD": "${:,.0f}"}).background_gradient(
+            subset=["Economic_Impact_USD"], cmap="RdYlGn")
+
+            # Affichage du tableau dans Streamlit
             st.dataframe(
-                country_impact.style.format({"Economic_Impact_USD": "${:,.0f}"}),
+                styled_country_impact,
                 column_config={
                     "Flag_URL": st.column_config.ImageColumn("Drapeau", width = "350"),
                     "Country": st.column_config.TextColumn("Pays", width="stretch"),
@@ -279,9 +277,8 @@ if "Event_concerts" in st.session_state.get("_page", ""):
             ).add_to(m)
 
         # Afficher la carte dans Streamlit
-        # Utiliser `st.container()` pour forcer la pleine largeur
         with st.container():
-            st_folium(m, width=1200, height=500)
+            folium_static(m, width=1200, height=600)
 
 
     #### BLOC 2 : AUDIENCE AND TREND ANALYSIS ####
@@ -384,8 +381,9 @@ if "Event_concerts" in st.session_state.get("_page", ""):
         styled_df = (festival_revenue.style.format({
                 "Economic_Impact_USD": "${:,.0f}", 
                 "Attendance_Numbers": "{:,.0f}"
-                })).background_gradient(subset=["Economic_Impact_USD"], cmap="Greens")
+                })).background_gradient(subset=["Economic_Impact_USD"], cmap="RdYlGn")
         
+        # Affichage du tableau dans Streamlit
         st.dataframe(
             styled_df,
             column_config={
