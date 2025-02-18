@@ -10,8 +10,9 @@ import altair as alt
 import plotly.express as px
 
 st.session_state["_page"] = "World"
+
 st.set_page_config(
-    page_title="2_World",
+    page_title="Monde",
     page_icon="🌏",
     layout="wide"
 )
@@ -46,6 +47,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# Mettre la sidebar semi-transparent
 st.markdown(
     """
     <style>
@@ -94,13 +96,17 @@ if "World" in st.session_state.get("_page", ""):
 
   df_countries_chart = load_data()
 
-  st.header("Les charts dans le monde :globe_with_meridians: - source Spotify")
-  st.divider()
+  # Ajout du titre principal du dashboard 
+  st.markdown("<h1 style='text-align: center; color: white;'> Top artistes et musiques à l'international </h1>", unsafe_allow_html=True)
+ 
   # ajouter la possibilité de sélectionner l'europe
+  # Sidebar - Filtres
+  st.sidebar.header("Filtres")
   selected_country2 = st.sidebar.multiselect(
         "Localisation",
         list(df_countries_chart["country_name"].sort_values(ascending=True).unique()),
-        default="Global"
+        default="Global",
+        placeholder="Tous"
     )
 
   st.sidebar.header("🔍 Filtres Interactifs")
@@ -114,7 +120,7 @@ if "World" in st.session_state.get("_page", ""):
   selected_genre = st.sidebar.multiselect(
         ":top: Catégorie musicale",
         list(data["genre"].sort_values(ascending=True).unique()),
-        placeholder="Sélectionner une catégorie",
+        placeholder="Tous",
         default=None
         )
 
@@ -130,7 +136,7 @@ if "World" in st.session_state.get("_page", ""):
     "Artiste",
     list(data["name"].sort_values(ascending=True).unique()),
     index=None,
-    placeholder="Sélectionner un artiste"
+    placeholder="Tous"
   )
 
   # Define the data
@@ -148,7 +154,7 @@ if "World" in st.session_state.get("_page", ""):
 
     # with col1:
       with st.container():
-          st.markdown(f"##### Top 50 {" ".join(selected_country2)}")
+          st.subheader(f"_Top 50 {" ".join(selected_country2)}_")
           col1, col2, col3 = st.columns(3)
           with col1:
             selected_position = st.selectbox(
@@ -164,12 +170,30 @@ if "World" in st.session_state.get("_page", ""):
           # Table charts
           df_chart_by_country = data[["position", "name", "title", "streams", "country_name"]].sort_values("position", ascending=order_asc)
           df_chart_by_country = df_chart_by_country.drop_duplicates()
-          st.dataframe(df_chart_by_country, hide_index=True)
 
+          # Configurer l'affichage des images
+          styled_df = (df_chart_by_country.style.format({
+            "streams": "{:,.0f}"
+            })).background_gradient(subset=["streams"], cmap="RdYlGn")
+
+          # Affichage avec configuration des colonnes
+          st.dataframe(
+              styled_df,
+              column_config={
+                  "position": st.column_config.NumberColumn("Position", width="stretch"),
+                  "name": st.column_config.TextColumn("Nom", width="stretch"),
+                  "title": st.column_config.TextColumn("Titre", width="stretch"),
+                  "streams": st.column_config.NumberColumn("Streams", width="stretch"),
+                  "country_name": st.column_config.TextColumn("Pays", width="stretch"),
+              },
+              hide_index=True,
+              use_container_width=True
+          )
+          
     # with col2:
       st.divider()
       with st.container():
-        st.markdown("##### Indice de popularité")
+        st.subheader("_Indice de popularité_")
         with st.expander("Qu'est ce que le SPI ?"):
           st.write('''
               L'Indice de popularité de Spotify (SPI) est une mesure de performance rare que Spotify montre aux artistes.
@@ -206,7 +230,7 @@ if "World" in st.session_state.get("_page", ""):
     with col1:
       with st.container():
           # afficher les genres predominants
-          st.markdown("#### Les catégories préférées")
+          st.subheader("_Les catégories préférées_")
 
           df_genres_pred = data.value_counts('genre').reset_index()[0:15]
           df_genres_pred = df_genres_pred.sort_values(by="count", ascending=False)
@@ -219,11 +243,11 @@ if "World" in st.session_state.get("_page", ""):
             labels={'genre':'Catégories', 'count': 'Total'},
             color="genre",
             height=400,
-            opacity=0.5
+            opacity=1
             )
 
             fig_genres.update_layout(
-                plot_bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la zone de traçage
+                plot_bgcolor="rgba(0, 0, 0, 0.)",  # Fond semi-transparent pour la zone de traçage
                 paper_bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent pour tout le graphique
                 legend=dict(
                     bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la légende
@@ -237,7 +261,7 @@ if "World" in st.session_state.get("_page", ""):
     with col2:
       with st.container():
         # les contenu explicit
-        st.markdown("#### :underage: Les contenus explicites")
+        st.subheader("_Les contenus explicites_")
 
         df_explicit = data.value_counts("explicit").reset_index()
 
@@ -263,7 +287,7 @@ if "World" in st.session_state.get("_page", ""):
 
     with st.container():
         # graph secteur pour les genres
-        st.markdown("#### :cd: Répartition en pourcentage")
+        st.subheader("_Répartition en pourcentage_")
         count_genres = data.value_counts("genre").reset_index()[0:15]
 
         fig_secteur_genres = px.pie(
@@ -290,7 +314,7 @@ if "World" in st.session_state.get("_page", ""):
     col1, col2 = st.columns(2)
     with col1:
         # les artist qui ressortent le plus sur ces charts
-        st.markdown("#### Les plus présents")
+        st.subheader("_Les plus présents_")
 
         df_artiste_pred = data.value_counts("name").reset_index()[0:15]
         df_artiste_pred = df_artiste_pred.sort_values(by=["count"], ascending=True)
@@ -315,7 +339,7 @@ if "World" in st.session_state.get("_page", ""):
         st.plotly_chart(fig_artistes)
 
     with col2:
-      st.markdown("#### :green_heart: Les streams")
+      st.subheader("_Les streams_")
 
       df_artistes_stream = data.groupby("name")["streams"].mean().reset_index()[0:15]
       df_artistes_stream = df_artistes_stream.sort_values(by=["streams"], ascending=True)
@@ -339,7 +363,7 @@ if "World" in st.session_state.get("_page", ""):
       st.plotly_chart(fig_streams)
   with tab4:
     # carte repartition des streams
-    st.markdown("#### :globe_with_meridians: Répartition géographique")
+    st.subheader("_Répartition géographique_")
 
     if "Global" in selected_country2 or len(selected_country2) == 1:
       df_streams = df_countries_chart[(df_countries_chart["code_country"] != "GLOBAL")]

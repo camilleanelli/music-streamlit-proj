@@ -19,7 +19,12 @@ from datetime import datetime, timedelta
 
 # Configuration Streamlit
 st.session_state["_page"] = "Evolution"
-st.set_page_config(layout="wide")
+
+st.set_page_config(
+    page_title="Evolution",
+    page_icon="📈",
+    layout="wide"
+)
 
 # Ajouter une image background depuis une URL en utilisant CSS 
 st.markdown(
@@ -132,7 +137,7 @@ if "engine" not in st.session_state:
 
 if "Evolution" in st.session_state.get("_page", ""):
     # Ajout du titre principal du dashboard
-    st.markdown("<h1 style='text-align: center; color: white;'> Evolution du charts Top 10 / Semaine</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: white;'> Top 10 de la semaine</h1>", unsafe_allow_html=True)
     st.write('')
     
     @st.cache_data(show_spinner=False, hash_funcs={datetime: lambda x: x.timestamp()})
@@ -174,6 +179,8 @@ if "Evolution" in st.session_state.get("_page", ""):
             start_date_default = min_date
             end_date_default = max_date
 
+            # Sidebar - Filtres
+            st.sidebar.header("Filtres")
             # Sélection de la plage de dates dans la sidebar
             date_range = st.sidebar.date_input(
                 "Sélection de la plage de dates",
@@ -419,20 +426,26 @@ if "Evolution" in st.session_state.get("_page", ""):
                             category_orders={'Artist': top_artists['Artist'].tolist()}
                         )
                         fig_bar.update_layout(
-                            xaxis_title=None,
-                            yaxis_title=None,
-                            plot_bgcolor="rgba(0,0,0,0)",  
-                            paper_bgcolor="rgba(0,0,0,0)",  
-                            width=800, 
-                            height=700,
-                            title_font=dict(size=24), 
-                            xaxis_title_font=dict(size=18),  
-                            yaxis_title_font=dict(size=18),  
-                            font=dict(size=14),
+                            plot_bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la zone de traçage
+                            paper_bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent global
+                            legend=dict(
+                                bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la légende
+                                font=dict(color="white")  # Texte blanc pour une meilleure lisibilité
+                            ),
+                            margin=dict(t=50, b=50, l=150, r=50),  # Ajustement des marges
+                            title_font=dict(size=24, color="white"),  # Couleur blanche pour le titre
+                            xaxis=dict(
+                                title_font=dict(size=18, color="white"),  
+                                tickfont=dict(size=14, color="white")  
+                            ),
+                            yaxis=dict(
+                                title_font=dict(size=18, color="white"),  
+                                tickfont=dict(size=14, color="white")  
+                            ),
                             title_x=0.3,
                             title_xanchor='left'
                         )
-                        st.plotly_chart(fig_bar)
+                        st.plotly_chart(fig_bar, use_container_width=True)
                     
                     # classement 
                     with col1:
