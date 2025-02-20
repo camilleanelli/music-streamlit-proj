@@ -59,6 +59,10 @@ st.markdown(
         /* Applique la couleur blanche aux textes pour garantir une bonne lisibilité */
         section[data-testid="stSidebar"] * {color: white;
         }
+
+        div[data-testid]="stHeading"] {
+            color: white;
+        }
     </style>
     """,
     unsafe_allow_html=True
@@ -96,20 +100,19 @@ if "World" in st.session_state.get("_page", ""):
 
   df_countries_chart = load_data()
 
-  # Ajout du titre principal du dashboard 
+  # Ajout du titre principal du dashboard
   st.markdown("<h1 style='text-align: center; color: white;'> Top artistes et musiques à l'international </h1>", unsafe_allow_html=True)
- 
+
   # ajouter la possibilité de sélectionner l'europe
   # Sidebar - Filtres
   st.sidebar.header("Filtres")
   selected_country2 = st.sidebar.multiselect(
-        "Localisation",
+        "🌐 Localisation",
         list(df_countries_chart["country_name"].sort_values(ascending=True).unique()),
         default="Global",
         placeholder="Tous"
     )
 
-  st.sidebar.header("🔍 Filtres Interactifs")
   # define the data with selected country
   if selected_country2:
     data = df_countries_chart[df_countries_chart["country_name"].isin(selected_country2)]
@@ -133,7 +136,7 @@ if "World" in st.session_state.get("_page", ""):
 
   # choose artist
   selected_artist = st.sidebar.selectbox(
-    "Artiste",
+    "🎤 Artiste",
     list(data["name"].sort_values(ascending=True).unique()),
     index=None,
     placeholder="Tous"
@@ -189,7 +192,7 @@ if "World" in st.session_state.get("_page", ""):
               hide_index=True,
               use_container_width=True
           )
-          
+
     # with col2:
       st.divider()
       with st.container():
