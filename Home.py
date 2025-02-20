@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sqlalchemy import create_engine, text
 import pandas as pd
+import base64
 
 # Configuration de la page
 st.session_state["_page"] = "Home"
@@ -13,38 +14,65 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# imgade de fond animée
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        base64_str = base64.b64encode(img_file.read()).decode()
+    return f"data:image/png;base64,{base64_str}"  
 
-# Configuration de l'image de fond et de l'animation
 st.markdown(
     f"""
     <style>
-        /* Définition de l'animation pour le fond d'écran */
         @keyframes moveBackground {{
-            0% {{
-                background-position: 0% 0%;
-            }}
-            50% {{
-                background-position: 100% 100%;
-            }}
-            100% {{
-                background-position: 0% 0%;
-            }}
+            0% {{ background-position: 0% 0%; }}
+            50% {{ background-position: 100% 100%; }}
+            100% {{ background-position: 0% 0%; }}
         }}
 
         .stApp {{
-            background-image: url("https://img.freepik.com/free-vector/wavy-colorful-background-style_23-2148497521.jpg");
+            background-image: url("{get_base64_image("img/background.jpg") }");
             background-size: cover;
-            background-position: 0% 0%;
+            background-position: center;
             background-attachment: fixed;
-            background-color: rgba(0,0,0, 0.5); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
-            background-blend-mode: overlay; /* Fusionne l'image et la couleur */
-            animation: moveBackground 40s ease-in-out infinite; /* Animation du fond avec une durée de 20 secondes et un mouvement infini */
+            background-color: rgba(0, 0, 0, 0.5);
+            background-blend-mode: overlay;
+            animation: moveBackground 40s ease-in-out infinite;
         }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
+# # Configuration de l'image de fond et de l'animation
+# st.markdown(
+#     f"""
+#     <style>
+#         /* Définition de l'animation pour le fond d'écran */
+#         @keyframes moveBackground {{
+#             0% {{
+#                 background-position: 0% 0%;
+#             }}
+#             50% {{
+#                 background-position: 100% 100%;
+#             }}
+#             100% {{
+#                 background-position: 0% 0%;
+#             }}
+#         }}
+
+#         .stApp {{
+#             background-image: url("https://img.freepik.com/free-vector/wavy-colorful-background-style_23-2148497521.jpg");
+#             background-size: cover;
+#             background-position: 0% 0%;
+#             background-attachment: fixed;
+#             background-color: rgba(0,0,0, 0.5); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
+#             background-blend-mode: overlay; /* Fusionne l'image et la couleur */
+#             animation: moveBackground 40s ease-in-out infinite; /* Animation du fond avec une durée de 20 secondes et un mouvement infini */
+#         }}
+#     </style>
+#     """,
+#     unsafe_allow_html=True
+# )
 
 # Configuration de la sidebar
 st.markdown(
@@ -111,7 +139,7 @@ st.markdown(
     <div class="title-container">
         <img src="https://img.icons8.com/ios-filled/50/ffffff/guitar.png" class="music-icon" />
         <img src="https://img.icons8.com/ios-filled/50/ffffff/saxophone.png" class="music-icon" />
-        <img src="https://img.icons8.com/ios-filled/50/ffffff/music.png" class="music-icon" style="margin-right: 10%" />
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/music.png" class="music-icon" style="margin-right: 3%" />
         <h1 style="text-align: center; color: white;">
            <span class="animated-music">Music Data Insights</span>
         </h1>
@@ -121,15 +149,15 @@ st.markdown(
     </div>
     """,
     unsafe_allow_html=True
-)
-       
+)       
 
 # Configuration CSS harmonisé pour toute l'application
 st.markdown("""
     <style>
     /* Style des cartes */
     .custom-card {
-        background-color: #f0f2f6;
+        /* background-color: #f0f2f6;*/
+        background-color: rgba(240, 242, 246, 0.8);
         padding: 1.5rem;
         border-radius: 0.5rem;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -194,60 +222,35 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.markdown("""
-        <div class="custom-card">
-            <h3>📈 Évolution</h3>
-            <p>Suivez en temps réel les titres les plus populaires de la semaine. Découvrez l'évolution des classements et identifiez les morceaux qui dominent les plateformes de streaming.</p>
-        </div>
-    """, unsafe_allow_html=True)
-    if st.button("Accéder à l'Évolution", key="btn_evolution", use_container_width=True):
-        st.switch_page("pages/1_Evolution.py")
-
-with col2:
-    st.markdown("""
-        <div class="custom-card">
-            <h3>🌍 Monde </h3>
-            <p>Explorez les artistes et chansons les plus écoutés à travers le monde. Comparez les tendances musicales par pays et observez les dynamiques culturelles du marché global.</p>
-        </div>
-    """, unsafe_allow_html=True)
-    if st.button("Accéder au Monde", key="btn_monde", use_container_width=True):
-        st.switch_page("pages/2_world.py")
-
-with col3:
-    st.markdown("""
-        <div class="custom-card">
-            <h3>🎧 Plateforme</h3>
-            <p> Analysez la répartition des écoutes sur les principales plateformes de streaming (Spotify, Youtube, Deezer,…). Identifiez la performance des titres selon les différents services.</p>
-        </div>
-    """, unsafe_allow_html=True)
-    if st.button("Accéder aux Plateformes", key="btn_plateforme", use_container_width=True):
-        st.switch_page("pages/3_Platforms.py")
-
-with col4:
-    st.markdown("""
-    <div class="custom-card">
-        <h3>🎤 Festival</h3>
-        <p>Plongez dans l'univers des festivals de musique ! Découvrez les événements majeurs, leurs statistiques d'affluence, leur impact économique et les genres musicaux les plus représentés .</p>
-    </div>
-    """, unsafe_allow_html=True)
-    if st.button("Accéder aux Festivals", key="btn_festivals", use_container_width=True):
-        st.switch_page("pages/4_Event_concerts.py")
-
-st.divider()
-
 st.markdown("""
-    <div class="custom-card">
+    <div class="custom-card" style='text-align: center;'>
         <h2>Contexte et présentation du projet </h2>
         </div>
 """, unsafe_allow_html=True)
 
 st.divider()
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["Présentation 👥", "Objectif et enjeux 🎯", "Rétroplanning 📅", "Démarche et Méthodologie 📝", "Diagramme 🤖"])
+st.markdown(
+    """
+    <style>
+    div[data-baseweb="tab-list"] {
+        display: flex;
+        justify-content: center;  
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Création des onglets
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    "Présentation 👥", 
+    "Objectif et enjeux 🎯", 
+    "Rétroplanning 📅", 
+    "Démarche et Méthodologie 📝", 
+    "Analyses 🔎",
+    "Diagramme 🤖"
+])
 
 #### PRESENTATION DE L'EQUIPE ####
 with tab1: 
@@ -285,10 +288,13 @@ with tab2:
 
     # Liste des objectifs
     st.markdown("""
-    - Concevoir une application complète d'analyse de données musicales, de la collecte à la visualisation interactive.  
-    - Expérimenter l'ensemble du cycle de vie des données : acquisition, traitement, stockage, analyse et restitution.  
-    - Automatiser la gestion des données grâce à un pipeline ETL performant et adaptable.  
-    - Offrir une interface intuitive permettant d'explorer les tendances musicales et d'adapter les visualisations aux besoins des utilisateurs.  
+    - Développer une application interactive d'analyse musicale, de la collecte à la visualisation.
+    
+    - Expérimenter l’ensemble du cycle de vie des données : acquisition, traitement, stockage et analyse. 
+    
+    - Automatiser la gestion des données avec un pipeline ETL. 
+    
+    - Offrir une interface intuitive pour explorer les tendances musicales et personnaliser les visualisations.
     """, unsafe_allow_html=False)
 
     # Affichage du titre "Enjeux du projet" avec le style harmonisé
@@ -300,8 +306,10 @@ with tab2:
 
     # Liste des enjeux
     st.markdown("""
-    - **Fiabilité et actualisation des données** : Assurer la collecte et la mise à jour régulière des informations pour garantir des analyses pertinentes.  
+    - **Fiabilité et actualisation des données** : Assurer la collecte et la mise à jour régulière des données pour garantir des analyses pertinentes. 
+     
     - **Qualité et structuration des données** : Optimiser le nettoyage et l'organisation des données pour une exploitation efficace.  
+    
     - **Accessibilité et expérience utilisateur** : Développer une interface fluide et interactive pour une exploration intuitive des tendances.  
     """, unsafe_allow_html=False)
 
@@ -311,10 +319,10 @@ with tab3:
     cols = st.columns(4)
     weeks = ["Semaine 1", "Semaine 2", "Semaine 3", "Semaine 4"]
     descriptions = [
+        "Recherche des sources de données",
         "Acquisition des Données, Traitement et Nettoyage",
-        "Mise en place d'une Infrastructure de Données",
-        "Création des Visualisations et de l'Interface Utilisateur",
-        "Affinage de l'interface et Présentation du projet"
+        "Tests et choix des interfaces utilisateur",
+        "Développement de l'interface et Présentation du projet"
     ]
     for col, week, desc in zip(cols, weeks, descriptions):
         with col:
@@ -325,11 +333,28 @@ with tab3:
             """, unsafe_allow_html=True)
             st.markdown(f"<p style='text-align: center;'>{desc}</p>", unsafe_allow_html=True)
 
-#### DEMARCHE, OUTILS ET EXPLORATION DES DONNEES ####
+#### DEMARCHE, METHODOLOGIE ####
 with tab4:
     cols = st.columns(3)
     # Étapes réalisées
     with cols[0]:
+        st.markdown(f"""
+            <div class="custom-card" style='text-align: center;'>
+                Outils Utilisés
+            </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("""
+        - **🐍 Python (pandas, matplotlib, plotly)**  
+        - **🐳 Docker**  
+        - **🤖 Mage-AI**  
+        - **🌐 PostgreSQL (Railway)**  
+        - **📺 Streamlit**  
+        """, unsafe_allow_html=False)
+
+    # Outils utilisés
+    with cols[1]:
+
         st.markdown(f"""
             <div class="custom-card" style='text-align: center;'>
                 Étapes réalisées
@@ -338,27 +363,12 @@ with tab4:
 
         st.markdown("""
         1. **Acquisition des Données**  
-        2. **Intégration et traitement dans Mage-AI (nettoyage et update PostgreSQL)**  
+        2. **Traitement dans Mage-AI**  
         3. **Recherche de KPI pertinents**  
         4. **Création de l'interface Streamlit**  
         5. **Test de l'interface**  
         """, unsafe_allow_html=False)
 
-    # Outils utilisés
-    with cols[1]:
-        st.markdown(f"""
-            <div class="custom-card" style='text-align: center;'>
-                Outils Utilisés
-            </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("""
-        - **🐍 Python (pandas, numpy)**  
-        - **🐳 Docker**  
-        - **🤖 Mage-AI**  
-        - **🌐 PostgreSQL**  
-        - **📺 Streamlit**  
-        """, unsafe_allow_html=False)
 
     # Collecte des données
     with cols[2]:
@@ -373,11 +383,52 @@ with tab4:
         - **Web scraping**  
         - **API REST**  
         """, unsafe_allow_html=False)
+        
+with tab5:
+    col1, col2, col3, col4 = st.columns(4)
 
+    with col1:
+        st.markdown("""
+            <div class="custom-card">
+                <h3 style='text-align: center;'>📈 Évolution</h3>
+                <p>Suivez en temps réel les titres les plus populaires de la semaine.<br>Découvrez l'évolution du TOP 10 et identifiez les morceaux qui dominent les plateformes de streaming.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        # if st.button("Accéder à l'Évolution", key="btn_evolution", use_container_width=True):
+        #     st.switch_page("pages/1_Evolution.py")
+
+    with col2:
+        st.markdown("""
+            <div class="custom-card">
+                <h3 style='text-align: center;'>🌍 Monde </h3>
+                <p>Explorez les artistes et chansons les plus écoutés à travers le monde.<br>Comparez les tendances musicales par pays et observez les dynamiques culturelles du marché global.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        # if st.button("Accéder au Monde", key="btn_monde", use_container_width=True):
+        #     st.switch_page("pages/2_World.py")
+
+    with col3:
+        st.markdown("""
+            <div class="custom-card">
+                <h3 style='text-align: center;'>🎧 Plateforme</h3>
+                <p> Analysez la répartition des écoutes sur les principales plateformes de streaming (Spotify, Youtube, Deezer,…).<br>Identifiez la performance des titres selon les différents services.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        # if st.button("Accéder aux Plateformes", key="btn_plateforme", use_container_width=True):
+        #     st.switch_page("pages/3_Platforms.py")
+
+    with col4:
+        st.markdown("""
+        <div class="custom-card">
+            <h3 style='text-align: center;'>🎤 Festival</h3>
+            <p>Plongez dans l'univers des festivals de musique ! Découvrez les événements majeurs, leurs statistiques d'affluence, leur impact économique et les genres musicaux les plus représentés .</p>
+        </div>
+        """, unsafe_allow_html=True)
+        # if st.button("Accéder aux Festivals", key="btn_festivals", use_container_width=True):
+        #     st.switch_page("pages/4_Event_concerts.py")        
         
 ### Diagramme Mage-AI
-
-with tab5:
+with tab6:
     # Configuration de la connexion à la base de données PostgreSQL
     if "DB_CONFIG" not in st.session_state:
         st.session_state.DB_CONFIG = {
@@ -417,7 +468,8 @@ with tab5:
         // Définition du style commun des noeuds
         node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12];
         
-        bgcolor="#2b2b2b";
+        // bgcolor="#2b2b2b:invis";
+        bgcolor="#2b2b2b:#2b2b2baa";
 
         // concerts
         concert_data_loader [label="CSV Brut\\nData loader", fillcolor="#1f77b4", fontcolor="white"];
@@ -507,7 +559,7 @@ with tab5:
     st.write("")
     st.markdown(
     """
-    <h4 style="text-align: center; color: white;">Le diagramme ci-dessous montre la structure du projet<br>et les pipelines Mage-AI des différents composants.</h4>
+    <h4 style="text-align: center; color: white;">Pipelines Mage-AI des différents composants.</h4>
     """,
     unsafe_allow_html=True
 )

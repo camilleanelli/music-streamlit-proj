@@ -4,7 +4,7 @@ import plotly.express as px
 import folium
 from sqlalchemy import create_engine, text
 from streamlit_folium import st_folium, folium_static
-
+import base64
 
 # Configuration de la page 
 st.session_state["_page"] = "Event_concerts"
@@ -24,31 +24,29 @@ DB_CONFIG = {
 }
 
 
-# Ajouter une image background depuis une URL en utilisant CSS 
+# imgade de fond animée
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        base64_str = base64.b64encode(img_file.read()).decode()
+    return f"data:image/png;base64,{base64_str}"  
+
 st.markdown(
     f"""
     <style>
-        /* Définition de l'animation pour le fond d'écran */
         @keyframes moveBackground {{
-            0% {{
-                background-position: 0% 0%;
-            }}
-            50% {{
-                background-position: 100% 100%;
-            }}
-            100% {{
-                background-position: 0% 0%;
-            }}
+            0% {{ background-position: 0% 0%; }}
+            50% {{ background-position: 100% 100%; }}
+            100% {{ background-position: 0% 0%; }}
         }}
 
         .stApp {{
-            background-image: url("https://img.freepik.com/free-vector/wavy-colorful-background-style_23-2148497521.jpg");
+            background-image: url("{get_base64_image("img/background.jpg") }");
             background-size: cover;
-            background-position: 0% 0%;
+            background-position: center;
             background-attachment: fixed;
-            background-color: rgba(0,0,0, 0.5); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
-            background-blend-mode: overlay; /* Fusionne l'image et la couleur */
-            animation: moveBackground 40s ease-in-out infinite; /* Animation du fond avec une durée de 20 secondes et un mouvement infini */
+            background-color: rgba(0, 0, 0, 0.5);
+            background-blend-mode: overlay;
+            animation: moveBackground 40s ease-in-out infinite;
         }}
     </style>
     """,
@@ -72,14 +70,37 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
+animation_html = """
+<style>
+@keyframes slide {
+    0% { transform: translateX(20vw); }  
+    50% { transform: translateX(50vw); }  
+    100% { transform: translateX(20vw); }  
+}
+.music-container {
+    position: relative;
+    width: 100%;
+    height: 120px;  /* Ajustez la hauteur au besoin */
+    overflow: hidden;
+}
+.music-note {
+    width: 50px;
+    position: absolute;
+    top: 30px; /* Ajuste la hauteur de la note */
+    animation: slide 3s linear infinite; /* Durée et répétition */
+}
+</style>
+<div class="music-container">
+    <img class="music-note" src="https://img.icons8.com/fluency/48/000000/musical-notes.png" alt="Music Note">
+</div>
+"""
 
 # Création de la connexion
 engine = create_engine(f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}")
 
 # Chargement des données Billboard
 if "Event_concerts" in st.session_state.get("_page", ""): 
-    @st.cache_data
+    @st.cache_data(show_spinner=False)
     def load_data():
         with engine.connect() as connection:
             result = connection.execute(text("""
@@ -104,10 +125,13 @@ if "Event_concerts" in st.session_state.get("_page", ""):
             data = pd.DataFrame(result.fetchall(), columns=result.keys())
         return data
 
-    df = load_data()
-
     # Ajout du titre principal du dashboard
     st.markdown("<h1 style='text-align: center; color: white;'> Analyse des festivals à travers le monde </h1>", unsafe_allow_html=True)
+
+    loading_container = st.empty()
+    loading_container.markdown(animation_html, unsafe_allow_html=True)
+    df = load_data()
+    loading_container.empty()
 
     # Sidebar - Filtres
     st.sidebar.header("Filtres")

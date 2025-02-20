@@ -8,6 +8,7 @@ import pandas as pd
 import seaborn as sns
 import altair as alt
 import plotly.express as px
+import base64
 
 st.session_state["_page"] = "World"
 
@@ -17,30 +18,29 @@ st.set_page_config(
     layout="wide"
 )
 
+# imgade de fond animée
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        base64_str = base64.b64encode(img_file.read()).decode()
+    return f"data:image/png;base64,{base64_str}"  
+
 st.markdown(
     f"""
     <style>
-        /* Définition de l'animation pour le fond d'écran */
         @keyframes moveBackground {{
-            0% {{
-                background-position: 0% 0%;
-            }}
-            50% {{
-                background-position: 100% 100%;
-            }}
-            100% {{
-                background-position: 0% 0%;
-            }}
+            0% {{ background-position: 0% 0%; }}
+            50% {{ background-position: 100% 100%; }}
+            100% {{ background-position: 0% 0%; }}
         }}
 
         .stApp {{
-            background-image: url("https://img.freepik.com/free-vector/wavy-colorful-background-style_23-2148497521.jpg");
+            background-image: url("{get_base64_image("img/background.jpg") }");
             background-size: cover;
-            background-position: 0% 0%;
+            background-position: center;
             background-attachment: fixed;
-            background-color: rgba(0,0,0, 0.5); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
-            background-blend-mode: overlay; /* Fusionne l'image et la couleur */
-            animation: moveBackground 40s ease-in-out infinite; /* Animation du fond avec une durée de 20 secondes et un mouvement infini */
+            background-color: rgba(0, 0, 0, 0.5);
+            background-blend-mode: overlay;
+            animation: moveBackground 40s ease-in-out infinite;
         }}
     </style>
     """,
@@ -68,13 +68,37 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+animation_html = """
+<style>
+@keyframes slide {
+    0% { transform: translateX(20vw); }  
+    50% { transform: translateX(50vw); }  
+    100% { transform: translateX(20vw); }  
+}
+.music-container {
+    position: relative;
+    width: 100%;
+    height: 120px;  /* Ajustez la hauteur au besoin */
+    overflow: hidden;
+}
+.music-note {
+    width: 50px;
+    position: absolute;
+    top: 30px; /* Ajuste la hauteur de la note */
+    animation: slide 3s linear infinite; /* Durée et répétition */
+}
+</style>
+<div class="music-container">
+    <img class="music-note" src="https://img.icons8.com/fluency/48/000000/musical-notes.png" alt="Music Note">
+</div>
+"""
 
 DATABASE_URL = "postgresql://postgres:hWWCWtvKQODqEErOleTnHmTcuKWaRAgd@monorail.proxy.rlwy.net:59179/railway"
 engine = create_engine(DATABASE_URL)
 
 if "World" in st.session_state.get("_page", ""):
 
-  @st.cache_data
+  @st.cache_data(show_spinner=False)
   def load_data():
     with Session(engine) as session:
         results = session.execute(text("""
@@ -97,12 +121,14 @@ if "World" in st.session_state.get("_page", ""):
                                   )
         return pd.DataFrame(results)
 
-
-  df_countries_chart = load_data()
-
   # Ajout du titre principal du dashboard
   st.markdown("<h1 style='text-align: center; color: white;'> Top artistes et musiques à l'international </h1>", unsafe_allow_html=True)
-
+  
+  loading_container = st.empty()
+  loading_container.markdown(animation_html, unsafe_allow_html=True)
+  df_countries_chart = load_data()
+  loading_container.empty()
+  
   # ajouter la possibilité de sélectionner l'europe
   # Sidebar - Filtres
   st.sidebar.header("Filtres")

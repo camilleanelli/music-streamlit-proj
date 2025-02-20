@@ -26,31 +26,29 @@ st.set_page_config(
     layout="wide"
 )
 
-# Ajouter une image background depuis une URL en utilisant CSS 
+# imgade de fond animée
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        base64_str = base64.b64encode(img_file.read()).decode()
+    return f"data:image/png;base64,{base64_str}"  
+
 st.markdown(
     f"""
     <style>
-        /* Définition de l'animation pour le fond d'écran */
         @keyframes moveBackground {{
-            0% {{
-                background-position: 0% 0%;
-            }}
-            50% {{
-                background-position: 100% 100%;
-            }}
-            100% {{
-                background-position: 0% 0%;
-            }}
+            0% {{ background-position: 0% 0%; }}
+            50% {{ background-position: 100% 100%; }}
+            100% {{ background-position: 0% 0%; }}
         }}
 
         .stApp {{
-            background-image: url("https://img.freepik.com/free-vector/wavy-colorful-background-style_23-2148497521.jpg");
+            background-image: url("{get_base64_image("img/background.jpg") }");
             background-size: cover;
-            background-position: 0% 0%;
+            background-position: center;
             background-attachment: fixed;
-            background-color: rgba(0,0,0, 0.5); /* Modifie entre 0.3 et 0.8 selon le niveau de transparence voulu */
-            background-blend-mode: overlay; /* Fusionne l'image et la couleur */
-            animation: moveBackground 40s ease-in-out infinite; /* Animation du fond avec une durée de 20 secondes et un mouvement infini */
+            background-color: rgba(0, 0, 0, 0.5);
+            background-blend-mode: overlay;
+            animation: moveBackground 40s ease-in-out infinite;
         }}
     </style>
     """,
@@ -73,6 +71,30 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+animation_html = """
+<style>
+@keyframes slide {
+    0% { transform: translateX(20vw); }  
+    50% { transform: translateX(50vw); }  
+    100% { transform: translateX(20vw); }  
+}
+.music-container {
+    position: relative;
+    width: 100%;
+    height: 120px;  /* Ajustez la hauteur au besoin */
+    overflow: hidden;
+}
+.music-note {
+    width: 50px;
+    position: absolute;
+    top: 30px; /* Ajuste la hauteur de la note */
+    animation: slide 3s linear infinite; /* Durée et répétition */
+}
+</style>
+<div class="music-container">
+    <img class="music-note" src="https://img.icons8.com/fluency/48/000000/musical-notes.png" alt="Music Note">
+</div>
+"""
 
 def section_background(title):
     # Ajouter un fond gris aux métriques en utilisant CSS 
@@ -137,8 +159,10 @@ if "engine" not in st.session_state:
 
 if "Evolution" in st.session_state.get("_page", ""):
     # Ajout du titre principal du dashboard
-    st.markdown("<h1 style='text-align: center; color: white;'> Top 10 de la semaine</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: white;'> Evolution du Top 10 / Semaine</h1>", unsafe_allow_html=True)
     st.write('')
+    loading_container = st.empty()
+    loading_container.markdown(animation_html, unsafe_allow_html=True)
     
     @st.cache_data(show_spinner=False, hash_funcs={datetime: lambda x: x.timestamp()})
     def load_data(min_date, max_date):
@@ -185,8 +209,8 @@ if "Evolution" in st.session_state.get("_page", ""):
             date_range = st.sidebar.date_input(
                 "Sélection de la plage de dates",
                 (start_date_default, end_date_default),
-                min_value=min_date,
-                max_value=max_date
+                min_value=start_date_default,
+                max_value=end_date_default  
             )
 
             if isinstance(date_range, tuple) and len(date_range) == 2:
@@ -196,6 +220,7 @@ if "Evolution" in st.session_state.get("_page", ""):
                 else:
                     st.cache_data.clear()
                     df = load_data(start_date, end_date)
+                    # loading_container.empty()
                     # st.dataframe(df)  # débugger
 
                     # Conversion et tri chronologique
@@ -233,7 +258,11 @@ if "Evolution" in st.session_state.get("_page", ""):
                             cover_images = dict(zip(df['Title'], results))
                         return cover_images
 
+                    # loading_container = st.empty()
+                    # loading_container.markdown(animation_html, unsafe_allow_html=True)
                     cover_images = asyncio.run(load_images_async(df))
+                    loading_container.empty()
+                    # cover_images = asyncio.run(load_images_async(df))
                     # Préparation d'une version basse résolution pour l'affichage dans le classement
                     cover_images_low = {
                         title: (img.resize((80, 80)) if img is not None else None)
@@ -345,8 +374,6 @@ if "Evolution" in st.session_state.get("_page", ""):
                                     image_path = "img/No-Arrow.png"
                                 try:
                                     img_arrow = Image.open(image_path).convert("RGBA")
-                                    background_arrow = Image.new("RGBA", img_arrow.size, (255, 255, 255, 255))
-                                    img_arrow = Image.alpha_composite(background_arrow, img_arrow).convert("RGB")
                                 except Exception as e:
                                     img_arrow = None
                                 
@@ -387,8 +414,6 @@ if "Evolution" in st.session_state.get("_page", ""):
                                     image_path = "img/No-Arrow.png"
                                 try:
                                     img_arrow = Image.open(image_path).convert("RGBA")
-                                    background_arrow = Image.new("RGBA", img_arrow.size, (255, 255, 255, 255))
-                                    img_arrow = Image.alpha_composite(background_arrow, img_arrow).convert("RGB")
                                 except Exception as e:
                                     img_arrow = None
                                 if img_arrow:
@@ -416,7 +441,9 @@ if "Evolution" in st.session_state.get("_page", ""):
                     with col3:    
                         artist_counts = df['Artist'].value_counts().reset_index()
                         artist_counts.columns = ['Artist', 'Count']
-                        top_artists = artist_counts.head(10)
+                        top_artists = artist_counts.head(10).copy()
+                        top_artists['Artist'] = top_artists['Artist'].apply(lambda x: x if len(x) <= 20 else x[:17] + '...')
+
                         fig_bar = px.bar(
                             top_artists,
                             x='Count',
@@ -425,14 +452,19 @@ if "Evolution" in st.session_state.get("_page", ""):
                             title=f"Nombre d'apparition sur la période<br>du {start_date.strftime("%d-%m-%Y")} au {end_date.strftime("%d-%m-%Y")}",  # Dates formatées
                             category_orders={'Artist': top_artists['Artist'].tolist()}
                         )
+                        
                         fig_bar.update_layout(
+                            xaxis_title=None,
+                            yaxis_title=None,
+                            width=800, 
+                            height=740,
                             plot_bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la zone de traçage
                             paper_bgcolor="rgba(0, 0, 0, 0.5)",  # Fond semi-transparent global
                             legend=dict(
                                 bgcolor="rgba(0, 0, 0, 0.0)",  # Fond semi-transparent pour la légende
                                 font=dict(color="white")  # Texte blanc pour une meilleure lisibilité
                             ),
-                            margin=dict(t=50, b=50, l=150, r=50),  # Ajustement des marges
+                            margin=dict(t=120, b=50, l=150, r=50),  # Ajustement des marges
                             title_font=dict(size=24, color="white"),  # Couleur blanche pour le titre
                             xaxis=dict(
                                 title_font=dict(size=18, color="white"),  
@@ -442,7 +474,7 @@ if "Evolution" in st.session_state.get("_page", ""):
                                 title_font=dict(size=18, color="white"),  
                                 tickfont=dict(size=14, color="white")  
                             ),
-                            title_x=0.3,
+                            title_x=0.25,
                             title_xanchor='left'
                         )
                         st.plotly_chart(fig_bar, use_container_width=True)
@@ -456,7 +488,7 @@ if "Evolution" in st.session_state.get("_page", ""):
                             frame_to_draw = frame % total_frames
                             img = draw_frame(frame_to_draw)
                             image_container.image(img)
-                            time.sleep(0.02)  # Intervalle entre les frames (20ms)
+                            time.sleep(0.005)  # Intervalle entre les frames (5ms)
                             frame += 1
             else:
                 st.info("Sélectionner une plage de dates.")
